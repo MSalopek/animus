@@ -1,6 +1,6 @@
 # Animus
 
-Animus is an tool that makes interactions with IPFS easier. It was inspired by services sucha as Pinata, web3.storage and Fleek.
+Animus is a backend tool (API, proxy) that makes interacting with IPFS easier. It was inspired by services sucha as [Pinata](https://www.pinata.cloud/), [web3.storage](https://web3.storage/) and [Fleek](https://fleek.co/).
 
 ## Purpose
 The main purpose of the tool is to allow users easier control over their IPFS data. Not everyone wanting to use IPFS is a software engineer and most users do not need to know the details of IPFS to be able to use it effectievly.
