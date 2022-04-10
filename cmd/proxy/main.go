@@ -7,8 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jackc/pgx/v4/pgxpool"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	"github.com/msalopek/animus/api"
 )
@@ -16,23 +17,23 @@ import (
 const defaultHttpPort = ":8083"
 const defaultIPFSApi = "localhost:50001"
 const defaultStoragePath = "./storage"
-const defaultDBUri = "postgres://animus:animus@localhost:5436/animus"
+const defaultDBUri = "postgres://animus:animus@localhost:5432/animus"
+const defaultDSN = "host=localhost user=animus password=animus dbname=animus port=5432 sslmode=disable"
 
 func main() {
 	ctx := exitSignal()
 
-	dbPool, err := pgxpool.Connect(context.Background(), defaultDBUri)
+	db, err := gorm.Open(postgres.Open(defaultDSN), &gorm.Config{})
 	if err != nil {
 		panic("could not connect to database - terminating")
 	}
-	defer dbPool.Close()
 
 	done := make(chan struct{})
 	logger := log.New()
 	logger.Out = os.Stdout
 	logger.SetFormatter(&log.TextFormatter{})
 
-	api := api.New(defaultHttpPort, dbPool, logger, done)
+	api := api.New(defaultHttpPort, db, logger, done)
 
 	go api.Start()
 

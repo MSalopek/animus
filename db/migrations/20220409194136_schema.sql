@@ -43,13 +43,13 @@ CREATE TABLE storage (
 	local BOOLEAN NOT NULL DEFAULT false,
 	local_path VARCHAR(1024),
 	hash VARCHAR(1024),
-	uploaded BOOLEAN DEFAULT NOT NULL false,
-	pinned BOOLEAN DEFAULT NOT NULL false,
+	uploaded BOOLEAN NOT NULL DEFAULT false,
+	pinned BOOLEAN NOT NULL DEFAULT false,
 	-- JSON data referencing any previous file versions
 	-- check the versions column to fetch any previous versions if they stil exist
 	-- TODO: create better versioning strategies
 	versions JSONB DEFAULT '{}'::JSONB,
-	created_at TIMESTAMP NOT NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	updated_at TIMESTAMP NOT NULL,
 	deleted_at TIMESTAMP,
 
@@ -72,8 +72,26 @@ CREATE TABLE gateways (
 		CHECK (slug~'^[a-z0-9\-]{1,32}$')
 );
 
+CREATE TABLE subscriptions (
+	id BIGSERIAL PRIMARY KEY,
+	user_id BIGINT REFERENCES users(id),
+	promotion BOOLEAN NOT NULL DEFAULT false, -- if true it's free
+	created_at TIMESTAMP NOT NULL DEFAULT now(),
+	updated_at TIMESTAMP NOT NULL DEFAULT now(),
+	price NUMERIC NOT NULL DEFAULT 0,
+	currency VARCHAR(3) NOT NULL DEFAULT 'EUR',
+	valid_from TIMESTAMP NOT NULL,
+	valid_to TIMESTAMP NOT NULL,
+	config JSONB DEFAULT '{}'::JSONB,
+
+	CONSTRAINT subscriptions_updated_at
+		CHECK (updated_at>=created_at),
+	CONSTRAINT subscriptions_valid_to_valid_from
+		CHECK (valid_to>=valid_from)
+);
 
 -- +goose Down
 DROP TABLE gateways;
 DROP TABLE storage;
+DROP TABLE subscriptions;
 DROP TABLE users;

@@ -7,25 +7,28 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 // TODO: abstract the DB logic into a set of interfaces
 
+const defaultSecret = "pleaseDontUsethisstring"
+
 type HttpAPI struct {
 	engine *gin.Engine
 	server *http.Server
-	db     *pgxpool.Pool
+	db     *gorm.DB
+	secret string
 	logger *logrus.Logger
 
 	done chan struct{}
 	port string
 }
 
-func New(port string, dbPool *pgxpool.Pool, log *logrus.Logger, done chan struct{}) *HttpAPI {
-	if dbPool == nil {
+func New(port string, db *gorm.DB, log *logrus.Logger, done chan struct{}) *HttpAPI {
+	if db == nil {
 		panic("DB must be provided")
 	}
 
@@ -36,7 +39,8 @@ func New(port string, dbPool *pgxpool.Pool, log *logrus.Logger, done chan struct
 			Addr:    port,
 			Handler: engine,
 		},
-		db:     dbPool,
+		db:     db,
+		secret: defaultSecret,
 		done:   done,
 		logger: log,
 	}
@@ -49,8 +53,8 @@ func (api *HttpAPI) registerHandlers() {
 	root := api.engine.Group("/api")
 
 	root.GET("/ping", WIPresponder)
-	root.GET("/login/", WIPresponder)
-	root.POST("/register", WIPresponder)
+	root.GET("/login/", api.Login)
+	root.POST("/register", api.Register)
 
 	root.POST("/files/add", WIPresponder)
 	root.POST("/files/pin/:id", WIPresponder)

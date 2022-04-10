@@ -1,0 +1,13 @@
+version: '3.5'
+services:
+  db:
+    image: postgres:14-alpine
+    shm_size: '2gb'
+    command: postgres -c work_mem=30MB
+    environment:
+      POSTGRES_USER: "${DB_USERNAME:-animus}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-animus}"
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGDATA: /var/lib/postgresql-static/data
+    ports:
+      - "${DB_PORT:-5432}:5432"

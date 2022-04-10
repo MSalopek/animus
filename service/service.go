@@ -4,11 +4,11 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/msalopek/animus/api"
 	"github.com/msalopek/animus/ipfs"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type HttpAPI interface {
@@ -43,20 +43,16 @@ type HttpAPI interface {
 //    - checks uploaded files and uploads them to IPFS
 //    - can be used to manipulate the file/dir on IPFS
 type IPFSProxy struct {
-	dbPool     *pgxpool.Pool
+	db         *gorm.DB
 	httpAPI    *api.HttpAPI
 	ipfsClient *ipfs.IPFSClient
 
 	logger *logrus.Logger
 }
 
-func New(httpAPi *api.HttpAPI, ipfsNodeAPI string, dbPool *pgxpool.Pool) IPFSProxy {
+func New(db *gorm.DB, *api.HttpAPI, ipfsNodeAPI string) IPFSProxy {
 	if ipfsNodeAPI == "" {
 		panic("IPFSNodeAPI must be provided")
-	}
-
-	if dbPool == nil {
-		panic("DB Pool must be provided")
 	}
 
 	logger := log.New()
@@ -65,6 +61,7 @@ func New(httpAPi *api.HttpAPI, ipfsNodeAPI string, dbPool *pgxpool.Pool) IPFSPro
 
 	s := IPFSProxy{
 		httpAPI: httpAPi,
+		db: db,
 		logger:  logger,
 	}
 	return s
