@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	github.com/Kubuxu/go-ipfs-swarm-key-gen v0.0.0-20170218193930-0ee739ec6d32 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect

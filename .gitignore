@@ -13,3 +13,10 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# IPFS local compose files
+devenv/ipfs/blocks
+devenv/ipfs/datastore
+devenv/ipfs/keystore
+devenv/ipfs/api
+devenv/ipfs/repo.lock

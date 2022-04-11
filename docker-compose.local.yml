@@ -18,7 +18,10 @@ services:
       - IPFS_PROFILE=server
       - IPFS_PATH=/ipfsdata
     volumes:
-      - ./devenv/data/ipfs:/ipfsdata
+      # ipfs node is private
+      # ./data/ipfs/config::Bootstrap list is empty (no bootstrap)
+      # swarm key is provided in the devenv
+      - ./devenv/ipfs:/ipfsdata
     ports:
       - "4001:4001"
       - "127.0.0.1:8080:8080"

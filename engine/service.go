@@ -1,11 +1,10 @@
-package service
+package engine
 
 import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/msalopek/animus/api"
-	"github.com/msalopek/animus/ipfs"
+	"github.com/msalopek/animus/engine/ipfs"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -44,13 +43,13 @@ type HttpAPI interface {
 //    - can be used to manipulate the file/dir on IPFS
 type IPFSProxy struct {
 	db         *gorm.DB
-	httpAPI    *api.HttpAPI
+	httpAPI    HttpAPI
 	ipfsClient *ipfs.IPFSClient
 
 	logger *logrus.Logger
 }
 
-func New(db *gorm.DB, *api.HttpAPI, ipfsNodeAPI string) IPFSProxy {
+func New(db *gorm.DB, api HttpAPI, ipfsNodeAPI string) IPFSProxy {
 	if ipfsNodeAPI == "" {
 		panic("IPFSNodeAPI must be provided")
 	}
@@ -60,8 +59,8 @@ func New(db *gorm.DB, *api.HttpAPI, ipfsNodeAPI string) IPFSProxy {
 	logger.SetFormatter(&log.TextFormatter{})
 
 	s := IPFSProxy{
-		httpAPI: httpAPi,
-		db: db,
+		httpAPI: api,
+		db:      db,
 		logger:  logger,
 	}
 	return s
