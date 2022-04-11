@@ -52,28 +52,33 @@ func New(port string, db *gorm.DB, log *logrus.Logger, done chan struct{}) *Http
 func (api *HttpAPI) registerHandlers() {
 	root := api.engine.Group("/api")
 
-	root.GET("/ping", WIPresponder)
-	root.GET("/login/", api.Login)
-	root.POST("/register", api.Register)
+	pub := root.Group("/public")
+	pub.GET("/ping", WIPresponder)
+	pub.GET("/login/", api.Login)
+	pub.POST("/register", api.Register)
 
-	root.POST("/files/add", WIPresponder)
-	root.POST("/files/pin/:id", WIPresponder)
-	root.DELETE("/files/delete/:id", WIPresponder)
-	root.PUT("/files/update/:id", WIPresponder)
+	auth := root.Group("/auth").Use(authorizeRequest(
+		api.secret,
+		"Animus Engine",
+	))
+	auth.POST("/files/add", WIPresponder)
+	auth.POST("/files/pin/:id", WIPresponder)
+	auth.DELETE("/files/delete/:id", WIPresponder)
+	auth.PUT("/files/update/:id", WIPresponder)
 
 	// get single file/directory metadata
-	root.GET("/files/:id/stat")
+	auth.GET("/files/:id/stat")
 
 	// get paginated list of user's files/directories
-	root.GET("/files/user/:id", WIPresponder)
+	auth.GET("/files/user/:id", WIPresponder)
 
-	root.POST("/gates/", WIPresponder)
-	root.GET("/gates/:id", WIPresponder)
-	root.DELETE("/gates/:id", WIPresponder)
-	root.PATCH("/gates/:id", WIPresponder)
+	auth.POST("/gates/", WIPresponder)
+	auth.GET("/gates/:id", WIPresponder)
+	auth.DELETE("/gates/:id", WIPresponder)
+	auth.PATCH("/gates/:id", WIPresponder)
 
 	// get all gates for user
-	root.GET("/gates/user/:id", WIPresponder)
+	auth.GET("/gates/user/:id", WIPresponder)
 }
 
 func (api *HttpAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
