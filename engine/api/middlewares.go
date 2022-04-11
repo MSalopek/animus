@@ -45,7 +45,7 @@ func authorizeRequest(secret, autority string) gin.HandlerFunc {
 		claims, err := auth.ValidateToken(bearer)
 		if err != nil {
 			// TODO: log exact error
-			abortWithError(c, 401, ErrInvalidAuthToken)
+			abortWithError(c, 401, ErrUnauthorized)
 			return
 		}
 

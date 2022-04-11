@@ -1,10 +1,16 @@
 package api
 
-const ErrCouldNotLogin string = "could not log in"
-const ErrCouldNotRegister string = "could not register"
-const ErrInvalidCredentials string = "invalid credentials"
-const ErrNoAuthHeader string = "Authorization header not provided"
-const ErrInvalidAuthToken string = "invalid Authorization token"
+const (
+	ErrNotFound      = "not found"
+	ErrInternalError = "internal error"
+	ErrUnauthorized  = "unauthorized"
 
-const ErrJWTExpired string = "JWT expired"
-const ErrJWTClaimUnprocessable string = "unprocessable JTW"
+	ErrCouldNotLogin      = "could not log in"
+	ErrCouldNotRegister   = "could not register"
+	ErrInvalidCredentials = "invalid credentials"
+	ErrNoAuthHeader       = "Authorization header not provided"
+	ErrInvalidAuthToken   = "invalid Authorization token"
+
+	ErrJWTExpired            = "JWT expired"
+	ErrJWTClaimUnprocessable = "unprocessable JWT"
+)

@@ -9,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/msalopek/animus/models"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 // TODO: remove
@@ -24,6 +25,12 @@ type Credentials struct {
 	Lastname  string `json:"lastname"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
+}
+
+func (api *HttpAPI) Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "OK",
+	})
 }
 
 func (api *HttpAPI) Register(c *gin.Context) {
@@ -84,6 +91,35 @@ func (api *HttpAPI) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
 	})
+}
+
+func (api *HttpAPI) WhoAmI(c *gin.Context) {
+	var user models.User
+
+	// auth middleware injects this
+	email := c.GetString("email")
+	if len(email) < 1 {
+		abortWithError(c, http.StatusInternalServerError, ErrInternalError)
+		return
+	}
+
+	result := api.db.Where("email = ?", email).First(&user)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		abortWithError(c, http.StatusNotFound, ErrNotFound)
+		return
+	}
+
+	if result.Error != nil {
+		abortWithError(c, http.StatusInternalServerError, ErrInternalError)
+		return
+	}
+
+	c.JSON(200, user)
+}
+
+func (api *HttpAPI) GetUserFiles(c *gin.Context) {
+
 }
 
 func abortWithError(c *gin.Context, httpCode int, err string) {

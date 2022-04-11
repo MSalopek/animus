@@ -13,13 +13,13 @@ type Auth struct {
 	ExpirationHours time.Duration
 }
 
-// AuthClaim adds email claim to the stander token claims
+// AuthClaim adds email claim to the standard token claims
 type AuthClaim struct {
 	Email string
 	jwt.StandardClaims
 }
 
-// GenerateToken generates a jwt token
+// GenerateToken generates a JWT token
 func (a *Auth) GenerateToken(email string) (string, error) {
 	claims := &AuthClaim{
 		Email: email,
@@ -38,7 +38,7 @@ func (a *Auth) GenerateToken(email string) (string, error) {
 	return signed, nil
 }
 
-//ValidateToken validates the jwt token
+// ValidateToken validates a JWT token
 func (a *Auth) ValidateToken(signedToken string) (*AuthClaim, error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
