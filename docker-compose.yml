@@ -5,12 +5,28 @@ services:
     shm_size: '2gb'
     command: postgres -c work_mem=30MB
     environment:
-      POSTGRES_USER: "${DB_USERNAME:-animus}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD:-animus}"
-      POSTGRES_HOST_AUTH_METHOD: trust
-      PGDATA: /var/lib/postgresql-static/data
+      - POSTGRES_USER=animus
+      - POSTGRES_PASSWORD=animus
+      - POSTGRES_DB=animus
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - PGDATA=/var/lib/postgresql-static/data
     ports:
       - "${DB_PORT:-5432}:5432"
+
+  wait-for-db:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - db
+    command: db:5432
+
+  db-migrate:
+    image: gomicro/goose
+    command: goose -dir "/migrations" postgres "host=animus user=animus dbname=animus password=animus sslmode=disable" up
+    depends_on:
+      - db
+    restart: on-failure
+    volumes:
+      - ./db/migrations:/migrations
 
   ipfs:
     image: ipfs/go-ipfs:latest
