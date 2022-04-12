@@ -49,6 +49,7 @@ CREATE TABLE storage (
 	-- check the versions column to fetch any previous versions if they stil exist
 	-- TODO: create better versioning strategies
 	versions JSONB DEFAULT '{}'::JSONB,
+	metadata JSONB DEFAULT '{}'::JSONB,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	updated_at TIMESTAMP NOT NULL,
 	deleted_at TIMESTAMP,

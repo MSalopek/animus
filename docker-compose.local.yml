@@ -1,21 +1,21 @@
 version: '3.5'
 services:
-  db:
-    image: postgres:14-alpine
-    shm_size: '2gb'
-    command: postgres -c work_mem=30MB
-    environment:
-      POSTGRES_USER: "${DB_USERNAME:-animus}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD:-animus}"
-      POSTGRES_HOST_AUTH_METHOD: trust
-      PGDATA: /var/lib/postgresql-static/data
-    ports:
-      - "${DB_PORT:-5432}:5432"
+  # db:
+  #   image: postgres:14-alpine
+  #   shm_size: '2gb'
+  #   command: postgres -c work_mem=30MB
+  #   environment:
+  #     POSTGRES_USER: "${DB_USERNAME:-animus}"
+  #     POSTGRES_PASSWORD: "${DB_PASSWORD:-animus}"
+  #     POSTGRES_HOST_AUTH_METHOD: trust
+  #     PGDATA: /var/lib/postgresql-static/data
+  #   ports:
+  #     - "${DB_PORT:-5432}:5432"
 
   ipfs:
     image: ipfs/go-ipfs:latest
     environment:
-      - IPFS_PROFILE=server
+      - IPFS_PROFILE=local-discovery
       - IPFS_PATH=/ipfsdata
     volumes:
       # ipfs node is private
@@ -23,7 +23,15 @@ services:
       # swarm key is provided in the devenv
       - ./devenv/ipfs:/ipfsdata
     ports:
-      - "4001:4001"
-      - "127.0.0.1:8080:8080"
-      - "127.0.0.1:8081:8081"
-      - "127.0.0.1:5001:5001"
+      # Swarm listens on all interfaces, so is remotely reachable.
+      - 4001:4001/tcp
+      - 4001:4001/udp
+      
+      # The following ports only listen on the loopback interface, so are not remotely reachable by default.
+      # If you want to override these or add more ports, see https://docs.docker.com/compose/extends/ .
+      
+      # API port, which includes admin operations, so you probably don't want this remotely accessible.
+      - 127.0.0.1:5001:5001
+      
+      # HTTP Gateway
+      - 127.0.0.1:8080:8080
