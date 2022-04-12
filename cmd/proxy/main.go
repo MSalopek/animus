@@ -11,7 +11,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/msalopek/animus/api"
+	"github.com/msalopek/animus/engine/api"
 )
 
 const defaultHttpPort = ":8083"
