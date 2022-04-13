@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -11,6 +12,32 @@ import (
 	"gorm.io/gorm"
 )
 
+type Credentials struct {
+	Username  string `json:"username"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+}
+
+func (c *Credentials) Validate() error {
+	if c.Username == "" {
+		return errors.New("username not provided")
+	}
+	if c.Firstname == "" {
+		return errors.New("firstname not provided")
+	}
+	if c.Lastname == "" {
+		return errors.New("lastname not provided")
+	}
+	if c.Email == "" {
+		return errors.New("email not provided")
+	}
+	if len(c.Password) < 8 {
+		return errors.New("password must be at least 8 characters long")
+	}
+	return nil
+}
 func (api *HttpAPI) Register(c *gin.Context) {
 	var creds Credentials
 
