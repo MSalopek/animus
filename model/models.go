@@ -35,6 +35,10 @@ type Storage struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
+func (Storage) TableName() string {
+	return "storage"
+}
+
 type Gateway struct {
 	ID       int64         `json:"id"`
 	UserID   sql.NullInt64 `json:"user_id"`

@@ -129,7 +129,6 @@ CREATE TABLE public.storage (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone,
     CONSTRAINT storage_deleted_at CHECK (((deleted_at IS NULL) OR (deleted_at >= created_at))),
-    CONSTRAINT storage_local_files_check CHECK ((local AND (length((local_path)::text) <> 0))),
     CONSTRAINT storage_updated_at CHECK ((updated_at >= created_at))
 );
 

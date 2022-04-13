@@ -71,8 +71,8 @@ func (api *HttpAPI) registerHandlers() {
 	)
 	auth.GET("/whoami", api.WhoAmI)
 	// get paginated list of user's files/directories
+	auth.POST("/manager/add", api.UploadFile)
 	auth.GET("/manager/user/:id", WIPresponder)
-	auth.POST("/manager/add", WIPresponder)
 	// auth.POST("/manager/pin/:id", WIPresponder)
 	// auth.DELETE("/manager/delete/:id", WIPresponder)
 	// auth.PUT("/manager/update/:id", WIPresponder)

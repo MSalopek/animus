@@ -58,8 +58,6 @@ CREATE TABLE storage (
 		CHECK (updated_at>=created_at),
 	CONSTRAINT storage_deleted_at
 		CHECK (deleted_at IS NULL OR deleted_at>=created_at),
-	CONSTRAINT storage_local_files_check
-		CHECK (local AND LENGTH(local_path) <> 0)
 );
 
 CREATE TABLE gateways (

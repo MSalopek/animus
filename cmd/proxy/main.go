@@ -16,7 +16,7 @@ import (
 )
 
 const defaultHttpPort = ":8083"
-const defaultIPFSApi = "localhost:50001"
+const defaultIPFSApi = "localhost:5001"
 const defaultStoragePath = "./storage"
 const defaultDBUri = "postgres://animus:animus@localhost:5432/animus"
 const defaultDSN = "host=localhost user=animus password=animus dbname=animus port=5432 sslmode=disable"
