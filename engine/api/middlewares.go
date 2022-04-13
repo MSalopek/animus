@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/api/auth"
+	"github.com/msalopek/animus/engine/repo"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
@@ -50,6 +51,27 @@ func authorizeRequest(authority *auth.Auth) gin.HandlerFunc {
 
 		// inject email into gin.Context
 		c.Set("email", claims.Email)
+		c.Next()
+	}
+}
+
+func authorizeUser(repo *repo.Repo) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// injected by authorizeRequest
+		email := c.GetString("email")
+		if email == "" {
+			abortWithError(c, http.StatusUnauthorized, engine.ErrUnauthorized)
+			return
+		}
+
+		user, err := repo.GetUserByEmail(email)
+		if err != nil {
+			abortWithError(c, http.StatusForbidden, engine.ErrForbidden)
+			return
+		}
+
+		// inject userID into gin.Context
+		c.Set("userID", int(user.ID))
 		c.Next()
 	}
 }

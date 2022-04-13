@@ -60,7 +60,6 @@ func (api *HttpAPI) Register(c *gin.Context) {
 		Password:  hash,
 		CreatedAt: time.Now(),
 	}
-	// TODO: mv database operatios to Repo
 	res := api.repo.Create(&user)
 	if res.Error != nil {
 		// TODO: don't leak DB errors
@@ -106,7 +105,6 @@ func (api *HttpAPI) Login(c *gin.Context) {
 }
 
 func (api *HttpAPI) WhoAmI(c *gin.Context) {
-	// auth middleware injects this
 	email := c.GetString("email")
 	if len(email) < 1 {
 		abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)
@@ -120,8 +118,7 @@ func (api *HttpAPI) WhoAmI(c *gin.Context) {
 	}
 
 	if err != nil {
-		// abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)
-		abortWithError(c, http.StatusInternalServerError, err.Error())
+		abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 

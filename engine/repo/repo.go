@@ -31,6 +31,15 @@ func (rpo *Repo) GetUserUploads(userID int) ([]model.Storage, error) {
 	return s, nil
 }
 
+func (rpo *Repo) GetUserUploadByCid(userID int, cid string) (*model.Storage, error) {
+	var s model.Storage
+	res := rpo.Where("user_id = ? AND cid = ?", userID, cid).Limit(1).Find(&s)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &s, nil
+}
+
 func (rpo *Repo) CreateStorage(s *model.Storage) error {
 	res := rpo.Create(s)
 	if res.Error != nil {

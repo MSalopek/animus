@@ -66,13 +66,18 @@ func (api *HttpAPI) registerHandlers() {
 	root.POST("/login/", api.Login)
 	root.POST("/register", api.Register)
 
-	auth := root.Group("/auth").Use(authorizeRequest(api.auth))
+	auth := root.Group("/auth").Use(
+		authorizeRequest(api.auth),
+		authorizeUser(api.repo),
+	)
 	auth.GET("/whoami", api.WhoAmI)
-	auth.POST("/manager/add", api.UploadFile)
-	auth.GET("/user/:id/uploads", api.GetUserUploads)
-	// auth.POST("/manager/pin/:id", WIPresponder)
-	// auth.DELETE("/manager/delete/:id", WIPresponder)
-	// auth.PUT("/manager/update/:id", WIPresponder)
+	auth.POST("/storage/add", api.UploadFile)
+	auth.GET("/user/:id/storage", api.GetUserUploads)
+
+	// TODO
+	// auth.GET("/storage/ls/:cid", api.ProxyCommandLs)
+	// auth.POST("/storage/pin/:id", WIPresponder)
+	// auth.DELETE("/storage/delete/:id", WIPresponder)
 
 	// // get single file/directory metadata
 	// auth.GET("/manager/:id/stat")
