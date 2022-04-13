@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -22,16 +23,11 @@ func requestLogger(logger *logrus.Logger) gin.HandlerFunc {
 	}
 }
 
-func authorizeRequest(secret, autority string) gin.HandlerFunc {
-	auth := auth.Auth{
-		Secret:    secret,
-		Authority: autority,
-	}
-
+func authorizeRequest(authority *auth.Auth) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearer := c.Request.Header.Get("Authorization")
 		if bearer == "" {
-			abortWithError(c, 403, engine.ErrNoAuthHeader)
+			abortWithError(c, http.StatusForbidden, engine.ErrNoAuthHeader)
 			return
 		}
 
@@ -40,20 +36,20 @@ func authorizeRequest(secret, autority string) gin.HandlerFunc {
 		if len(ts) == 2 {
 			bearer = strings.TrimSpace(ts[1])
 		} else {
-			abortWithError(c, 400, engine.ErrInvalidAuthToken)
+			abortWithError(c, http.StatusBadRequest, engine.ErrInvalidAuthToken)
 			return
 		}
 
-		claims, err := auth.ValidateToken(bearer)
+		claims, err := authority.ValidateToken(bearer)
 		if err != nil {
 			// TODO: log exact error
-			abortWithError(c, 401, engine.ErrUnauthorized)
+			// abortWithError(c, http.StatusUnauthorized, engine.ErrUnauthorized)
+			abortWithError(c, http.StatusUnauthorized, err.Error())
 			return
 		}
 
 		// inject email into gin.Context
 		c.Set("email", claims.Email)
 		c.Next()
-
 	}
 }

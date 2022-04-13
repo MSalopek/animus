@@ -4,6 +4,7 @@ const (
 	ErrNotFound      = "not found"
 	ErrInternalError = "internal error"
 	ErrUnauthorized  = "unauthorized"
+	ErrForbidden     = "forbidden"
 
 	ErrCouldNotLogin      = "could not log in"
 	ErrCouldNotRegister   = "could not register"

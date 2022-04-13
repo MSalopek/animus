@@ -9,30 +9,31 @@ import (
 
 	"github.com/gin-gonic/gin"
 	shell "github.com/ipfs/go-ipfs-api"
-	"github.com/sirupsen/logrus"
+	"github.com/msalopek/animus/engine/api/auth"
+	"github.com/msalopek/animus/engine/repo"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 // TODO: abstract the DB logic into a set of interfaces
 
 const defaultSecret = "pleaseDontUsethisstring"
+const defaultExpiration = 1 * time.Hour
 
 type HttpAPI struct {
 	engine *gin.Engine
 	server *http.Server
 	ipfs   *shell.Shell
-	db     *gorm.DB
-	secret string
-	logger *logrus.Logger
+	repo   *repo.Repo
+	auth   *auth.Auth
+	logger *log.Logger
 
 	done chan struct{}
 	port string
 }
 
-func New(port string, ipfsURL string, db *gorm.DB, log *logrus.Logger, done chan struct{}) *HttpAPI {
-	if db == nil {
-		panic("DB must be provided")
+func New(port string, ipfsURL string, repo *repo.Repo, logger *log.Logger, done chan struct{}) *HttpAPI {
+	if repo == nil {
+		panic("Repo must be provided")
 	}
 
 	engine := gin.New()
@@ -43,14 +44,18 @@ func New(port string, ipfsURL string, db *gorm.DB, log *logrus.Logger, done chan
 			Addr:    port,
 			Handler: engine,
 		},
-		db:     db,
-		ipfs:   shell,
-		secret: defaultSecret,
+		repo: repo,
+		ipfs: shell,
+		auth: &auth.Auth{
+			Secret:          defaultSecret,
+			Authority:       "AnimusEngine",
+			ExpirationHours: defaultExpiration,
+		},
 		done:   done,
-		logger: log,
+		logger: logger,
 	}
 
-	engine.Use(requestLogger(log))
+	engine.Use(requestLogger(logger))
 	return s
 }
 
@@ -58,13 +63,12 @@ func (api *HttpAPI) registerHandlers() {
 	root := api.engine.Group("/api")
 
 	root.GET("/ping", api.Ping)
-	root.GET("/login/", api.Login)
+	root.POST("/login/", api.Login)
 	root.POST("/register", api.Register)
 
-	auth := root.Group("/auth").Use(authorizeRequest(
-		api.secret,
-		"AnimusEngine",
-	))
+	auth := root.Group("/auth").Use(
+		authorizeRequest(api.auth),
+	)
 	auth.GET("/whoami", api.WhoAmI)
 	// get paginated list of user's files/directories
 	auth.GET("/manager/user/:id", WIPresponder)

@@ -16,7 +16,7 @@ type Auth struct {
 
 // AuthClaim adds email claim to the standard token claims
 type AuthClaim struct {
-	Email string
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
@@ -25,7 +25,7 @@ func (a *Auth) GenerateToken(email string) (string, error) {
 	claims := &AuthClaim{
 		Email: email,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * a.ExpirationHours).Unix(),
+			ExpiresAt: time.Now().Local().Add(a.ExpirationHours).Unix(),
 			Issuer:    a.Authority,
 		},
 	}

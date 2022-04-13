@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/msalopek/animus/engine/api"
+	"github.com/msalopek/animus/engine/repo"
 )
 
 const defaultHttpPort = ":8083"
@@ -27,13 +28,20 @@ func main() {
 	if err != nil {
 		panic("could not connect to database - terminating")
 	}
+	repo := repo.New(db)
 
 	done := make(chan struct{})
 	logger := log.New()
 	logger.Out = os.Stdout
 	logger.SetFormatter(&log.TextFormatter{})
 
-	api := api.New(defaultHttpPort, db, logger, done)
+	api := api.New(
+		defaultHttpPort,
+		defaultIPFSApi,
+		repo,
+		logger,
+		done,
+	)
 
 	go api.Start()
 

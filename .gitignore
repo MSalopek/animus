@@ -20,3 +20,6 @@ devenv/ipfs/datastore
 devenv/ipfs/keystore
 devenv/ipfs/api
 devenv/ipfs/repo.lock
+
+# local db mounted volume
+db/data

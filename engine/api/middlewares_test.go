@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/api/auth"
-	"github.com/msalopek/animus/models"
+	"github.com/msalopek/animus/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,11 +37,12 @@ func protectedHandler(c *gin.Context) {
 
 func routerWithAuthMiddleware() *gin.Engine {
 	router := gin.Default()
+	auth := &auth.Auth{
+		Secret:    testsecret,
+		Authority: testauthority,
+	}
 	// router uses auth middleware
-	router.Use(authorizeRequest(
-		testsecret,
-		testauthority,
-	))
+	router.Use(authorizeRequest(auth))
 
 	return router
 }
@@ -105,7 +106,7 @@ func TestValidToken(t *testing.T) {
 
 	router.ServeHTTP(w, req)
 
-	var resp models.User
+	var resp model.User
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
