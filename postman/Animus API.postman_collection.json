@@ -114,10 +114,10 @@
 			"name": "Private",
 			"item": [
 				{
-					"name": "manager",
+					"name": "Storage",
 					"item": [
 						{
-							"name": "Upload Multipart",
+							"name": "Add Single File",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -157,9 +157,34 @@
 								}
 							},
 							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
 						},
 						{
-							"name": "Get User Uploads",
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "User",
+					"item": [
+						{
+							"name": "Get User Storage",
 							"request": {
 								"method": "GET",
 								"header": [
