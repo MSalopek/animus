@@ -25,6 +25,7 @@ type Storage struct {
 	UserID    int64      `json:"user_id"`
 	Name      string     `json:"name"`
 	Public    bool       `json:"public"`
+	Metadata  string     `json:"metadata"`
 	Local     bool       `json:"local"`
 	LocalPath *string    `json:"local_path"`
 	Hash      *string    `json:"hash"`

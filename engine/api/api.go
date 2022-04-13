@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	shell "github.com/ipfs/go-ipfs-api"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -19,6 +21,7 @@ const defaultSecret = "pleaseDontUsethisstring"
 type HttpAPI struct {
 	engine *gin.Engine
 	server *http.Server
+	ipfs   *shell.Shell
 	db     *gorm.DB
 	secret string
 	logger *logrus.Logger
@@ -27,12 +30,13 @@ type HttpAPI struct {
 	port string
 }
 
-func New(port string, db *gorm.DB, log *logrus.Logger, done chan struct{}) *HttpAPI {
+func New(port string, ipfsURL string, db *gorm.DB, log *logrus.Logger, done chan struct{}) *HttpAPI {
 	if db == nil {
 		panic("DB must be provided")
 	}
 
 	engine := gin.New()
+	shell := shell.NewShell(ipfsURL)
 	s := &HttpAPI{
 		engine: engine,
 		server: &http.Server{
@@ -40,6 +44,7 @@ func New(port string, db *gorm.DB, log *logrus.Logger, done chan struct{}) *Http
 			Handler: engine,
 		},
 		db:     db,
+		ipfs:   shell,
 		secret: defaultSecret,
 		done:   done,
 		logger: log,
@@ -58,17 +63,18 @@ func (api *HttpAPI) registerHandlers() {
 
 	auth := root.Group("/auth").Use(authorizeRequest(
 		api.secret,
-		"Animus Engine",
+		"AnimusEngine",
 	))
+	auth.GET("/whoami", api.WhoAmI)
 	// get paginated list of user's files/directories
-	auth.GET("/files/user/:id", WIPresponder)
-	auth.POST("/files/add", WIPresponder)
-	// auth.POST("/files/pin/:id", WIPresponder)
-	// auth.DELETE("/files/delete/:id", WIPresponder)
-	// auth.PUT("/files/update/:id", WIPresponder)
+	auth.GET("/manager/user/:id", WIPresponder)
+	auth.POST("/manager/add", WIPresponder)
+	// auth.POST("/manager/pin/:id", WIPresponder)
+	// auth.DELETE("/manager/delete/:id", WIPresponder)
+	// auth.PUT("/manager/update/:id", WIPresponder)
 
 	// // get single file/directory metadata
-	// auth.GET("/files/:id/stat")
+	// auth.GET("/manager/:id/stat")
 
 	// auth.POST("/gates/", WIPresponder)
 	// auth.GET("/gates/:id", WIPresponder)
@@ -118,4 +124,12 @@ func (api *HttpAPI) Stop() error {
 
 	api.logger.Info("graceful shutdown successful")
 	return nil
+}
+
+func (api *HttpAPI) IPFSUpload(r io.Reader) (string, error) {
+	fileHash, err := api.ipfs.Add(r)
+	if err != nil {
+		return "", err
+	}
+	return fileHash, nil
 }

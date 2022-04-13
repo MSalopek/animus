@@ -17,8 +17,8 @@ CREATE TABLE users (
 	lastname VARCHAR(32),
 	email VARCHAR(256) NOT NULL,
 	password VARCHAR(60) NOT NULL,
-	created_at TIMESTAMP NOT NULL,
-	updated_at TIMESTAMP NOT NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT now(),
+	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
 
 	CONSTRAINT users_email_uniq UNIQUE (email),
@@ -51,7 +51,7 @@ CREATE TABLE storage (
 	versions JSONB DEFAULT '{}'::JSONB,
 	metadata JSONB DEFAULT '{}'::JSONB,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
-	updated_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
 
 	CONSTRAINT storage_updated_at

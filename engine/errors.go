@@ -1,4 +1,4 @@
-package api
+package engine
 
 const (
 	ErrNotFound      = "not found"
@@ -13,4 +13,7 @@ const (
 
 	ErrJWTExpired            = "JWT expired"
 	ErrJWTClaimUnprocessable = "unprocessable JWT"
+
+	ErrInvalidMeta  = "unprocessable meta field"
+	ErrUserNotFound = "user not found"
 )

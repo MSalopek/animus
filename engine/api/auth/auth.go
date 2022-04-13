@@ -1,10 +1,11 @@
-package api
+package auth
 
 import (
 	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/msalopek/animus/engine"
 )
 
 type Auth struct {
@@ -53,10 +54,10 @@ func (a *Auth) ValidateToken(signedToken string) (*AuthClaim, error) {
 
 	claims, ok := token.Claims.(*AuthClaim)
 	if !ok {
-		return nil, errors.New(ErrJWTClaimUnprocessable)
+		return nil, errors.New(engine.ErrJWTClaimUnprocessable)
 	}
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return nil, errors.New(ErrJWTExpired)
+		return nil, errors.New(engine.ErrJWTExpired)
 	}
 
 	return claims, nil

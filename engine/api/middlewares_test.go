@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/msalopek/animus/engine"
+	"github.com/msalopek/animus/engine/api/auth"
 	"github.com/msalopek/animus/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +27,7 @@ func protectedHandler(c *gin.Context) {
 	// auth middleware injects this
 	email := c.GetString("email")
 	if len(email) < 1 {
-		abortWithError(c, http.StatusInternalServerError, ErrInternalError)
+		abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 	c.JSON(200, gin.H{
@@ -45,7 +47,7 @@ func routerWithAuthMiddleware() *gin.Engine {
 }
 
 func getValidTestToken() string {
-	a := Auth{
+	a := auth.Auth{
 		Secret:          testsecret,
 		Authority:       testauthority,
 		ExpirationHours: 1,
