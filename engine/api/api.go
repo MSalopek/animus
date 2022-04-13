@@ -66,13 +66,10 @@ func (api *HttpAPI) registerHandlers() {
 	root.POST("/login/", api.Login)
 	root.POST("/register", api.Register)
 
-	auth := root.Group("/auth").Use(
-		authorizeRequest(api.auth),
-	)
+	auth := root.Group("/auth").Use(authorizeRequest(api.auth))
 	auth.GET("/whoami", api.WhoAmI)
-	// get paginated list of user's files/directories
 	auth.POST("/manager/add", api.UploadFile)
-	auth.GET("/manager/user/:id", WIPresponder)
+	auth.GET("/user/:id/uploads", api.GetUserUploads)
 	// auth.POST("/manager/pin/:id", WIPresponder)
 	// auth.DELETE("/manager/delete/:id", WIPresponder)
 	// auth.PUT("/manager/update/:id", WIPresponder)

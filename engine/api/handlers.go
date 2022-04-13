@@ -89,7 +89,10 @@ func (api *HttpAPI) UploadFile(c *gin.Context) {
 		return
 	}
 
+	// TODO: deduplicate cids
+	// check DB if CID exists
 	storeRec.Cid = &cid
+
 	// TODO: make this configurable;
 	// IPFS node does not need to autopin files
 	storeRec.Pinned = true
@@ -102,4 +105,27 @@ func (api *HttpAPI) UploadFile(c *gin.Context) {
 		"CID":  cid,
 		"meta": meta,
 	})
+}
+
+func (api *HttpAPI) GetUserUploads(c *gin.Context) {
+	email := c.GetString("email")
+	if email == "" {
+		abortWithError(c, http.StatusUnauthorized, engine.ErrUnauthorized)
+		return
+	}
+
+	user, err := api.repo.GetUserByEmail(email)
+	if err != nil {
+		abortWithError(c, http.StatusForbidden, engine.ErrForbidden)
+		return
+	}
+
+	// TODO: paginate with limit, offset
+	storage, err := api.repo.GetUserUploads(int(user.ID))
+	if err != nil {
+		abortWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, storage)
 }
