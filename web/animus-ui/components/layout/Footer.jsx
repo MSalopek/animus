@@ -140,7 +140,7 @@ export default function Footer() {
                 <span className="block mt-2 text-sm text-gray-600 dark:text-gray-400 hover:underline">
                   animus@spiritus.app
                 </span>
-				<span className="block mt-2 text-sm text-gray-600 dark:text-gray-400 hover:underline">
+                <span className="block mt-2 text-sm text-gray-600 dark:text-gray-400 hover:underline">
                   support@animus.app
                 </span>
               </div>
@@ -150,7 +150,7 @@ export default function Footer() {
 
         <hr className="h-px my-6 bg-gray-300 border-none dark:bg-gray-700" />
 
-        <div>
+        <div className="my-4">
           <p className="text-center text-gray-800 dark:text-white">
             © Animus 2022 - All rights reserved
           </p>

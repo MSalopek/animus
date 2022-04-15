@@ -1,14 +1,16 @@
 import Footer from "./Footer";
-import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 
 export default function Layout({ children }) {
   return (
-    <>
-      <Navbar />
-	    <Sidebar />
-      <main>{children}</main>
-      <Footer/>
-    </>
+    // TODO: just use a grid for layout :)
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      <Sidebar />
+      <div className="flex flex-col flex-1">
+        <main>{children}</main>
+
+        <Footer />
+      </div>
+    </div>
   );
 }
