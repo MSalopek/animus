@@ -73,14 +73,12 @@ func (api *HttpAPI) registerHandlers() {
 	auth.GET("/whoami", api.WhoAmI)
 	auth.POST("/storage/add", api.UploadFile)
 	auth.GET("/user/:id/storage", api.GetUserUploads)
+	// auth.GET("/storage/:cid", WIPresponder)
 
 	// TODO
 	// auth.GET("/storage/ls/:cid", api.ProxyCommandLs)
 	// auth.POST("/storage/pin/:id", WIPresponder)
 	// auth.DELETE("/storage/delete/:id", WIPresponder)
-
-	// // get single file/directory metadata
-	// auth.GET("/manager/:id/stat")
 
 	// auth.POST("/gates/", WIPresponder)
 	// auth.GET("/gates/:id", WIPresponder)

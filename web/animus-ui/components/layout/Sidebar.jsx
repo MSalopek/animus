@@ -39,7 +39,7 @@ export default function Sidebar() {
             <span className="ml-2 text-sm font-medium">Dashboard</span>
           </a>
           <a
-            className="flex items-center w-full h-12 px-3 mt-2 rounded hover:bg-gray-700 hover:text-gray-300"
+            className="flex items-center w-full h-12 px-3 mt-2 rounded bg-gray-700 hover:bg-gray-700 text-gray-200 hover:text-gray-300"
             href="#"
           >
             <svg
@@ -165,7 +165,7 @@ export default function Sidebar() {
         {/* DOCS SECTION */}
         <div className="flex flex-col items-center w-full mt-3 border-t border-gray-700">
           <a
-            className="flex items-center w-full h-12 px-3 mt-2 text-gray-200 bg-gray-700 rounded"
+            className="flex items-center w-full h-12 px-3 mt-2 rounded"
             href="#"
           >
             <svg

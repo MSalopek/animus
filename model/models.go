@@ -22,6 +22,7 @@ type User struct {
 type Storage struct {
 	ID        int64      `json:"id" gorm:"primaryKey"`
 	Cid       *string    `json:"cid"`
+	Dir       bool       `json:"dir"`
 	UserID    int64      `json:"-"`
 	Name      string     `json:"name"`
 	Public    bool       `json:"public"`
@@ -29,7 +30,7 @@ type Storage struct {
 	Local     bool       `json:"local,omitempty"`
 	LocalPath *string    `json:"local_path,omitempty"`
 	Hash      *string    `json:"hash,omitempty"`
-	Pinned    bool       `json:"pinned,omitempty"`
+	Pinned    bool       `json:"pinned"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at,omitempty"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`

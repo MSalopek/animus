@@ -1,8 +1,15 @@
-import { ActionBtn, BtnContainer } from "../buttons/Buttons";
-import Pagination from "../pagination/Pagination";
+import { useState } from "react";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import { DocumentAddIcon, FolderAddIcon } from "@heroicons/react/solid";
+import {
+  TrashIcon,
+  InformationCircleIcon,
+  // ArrowsExpandIcon,
+  DuplicateIcon,
+} from "@heroicons/react/outline";
 
-
+import { ModalBtn, BtnContainer, RoundActionBtn } from "../buttons/Buttons";
+import Pagination from "../pagination/Pagination";
 
 export default StorageView;
 
@@ -11,152 +18,82 @@ function StorageView() {
     <section className="bg-white dark:bg-gray-900">
       <div className="container px-6 py-12 mx-auto">
         <div className="flex flex-col">
-          <h1 className="text-3xl font-semibold text-gray-800 dark:text-white">
+          <h1 className="text-3xl font-semibold text-gray-800 dark:text-white mb-2">
             Storage Manager
           </h1>
           <BtnContainer>
-            <ActionBtn Icon={DocumentAddIcon} title={"Add File"}/>
-            <ActionBtn Icon={FolderAddIcon} title={"Add Directory"}/>
+            <ModalBtn Icon={DocumentAddIcon} title={"Add File"} />
+            <ModalBtn Icon={FolderAddIcon} title={"Add Directory"} />
           </BtnContainer>
         </div>
 
-        <div className="mt-4 space-y-4 lg:mt-8">
-          <div className="p-8 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <button className="flex items-center justify-between w-full">
-              <h1 className="font-semibold text-gray-700 dark:text-white">
-                How i can play for my appoinment ?
-              </h1>
-
-              <span className="text-gray-400 bg-gray-200 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M18 12H6"
-                  />
-                </svg>
-              </span>
-            </button>
-
-            <p className="mt-6 text-sm text-gray-500 dark:text-gray-300">
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Voluptas
-              eaque nobis, fugit odit omnis fugiat deleniti animi ab maxime cum
-              laboriosam recusandae facere dolorum veniam quia pariatur
-              obcaecati illo ducimus?
-            </p>
-          </div>
-
-          <div className="p-8 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <button className="flex items-center justify-between w-full">
-              <h1 className="font-semibold text-gray-700 dark:text-white">
-                Is the cost of the appoinment covered by private health
-                insurance?
-              </h1>
-
-              <span className="text-white bg-blue-500 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
-
-          <div className="p-8 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <button className="flex items-center justify-between w-full">
-              <h1 className="font-semibold text-gray-700 dark:text-white">
-                Do i need a referral?
-              </h1>
-
-              <span className="text-white bg-blue-500 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
-
-          <div className="p-8 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <button className="flex items-center justify-between w-full">
-              <h1 className="font-semibold text-gray-700 dark:text-white">
-                What are your opening house?
-              </h1>
-
-              <span className="text-white bg-blue-500 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
-
-          <div className="p-8 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <button className="flex items-center justify-between w-full">
-              <h1 className="font-semibold text-gray-700 dark:text-white">
-                What can i expect at my first consultation?
-              </h1>
-
-              <span className="text-white bg-blue-500 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
+        <div className="mt-4 space-y-4 lg:mt-8 border p-4 rounded-lg">
+          <StorageRow />
         </div>
-
       </div>
       <Pagination />
     </section>
+  );
+}
+
+function StorageRow() {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="py-2 px-8 bg-gray-100 rounded-lg dark:bg-gray-800">
+      <div className="flex items-center justify-between w-full">
+        <h1 className="font-semibold text-lg text-gray-700 dark:text-white">
+          Filename.txt
+          <span className="text-sm px-2 text-gray-400">(11.12.2022)</span>
+        </h1>
+
+        <div className="flex items-center text-gray-700 dark:text-white">
+          <span className="pr-2">
+            QmVaTLF6H23B7tno8REwSFxT8J21aWEnaSTpTzNM6sRi6b
+          </span>
+          <CopyToClipboard
+            text={"QmVaTLF6H23B7tno8REwSFxT8J21aWEnaSTpTzNM6sRi6b"}
+          >
+            <RoundActionBtn Icon={DuplicateIcon} />
+          </CopyToClipboard>
+        </div>
+
+        <BtnContainer>
+          <RoundActionBtn
+            Icon={InformationCircleIcon}
+            onClick={() => setExpanded(!expanded)}
+          />
+          <RoundActionBtn Icon={TrashIcon} />
+          {/* <RoundActionBtn Icon={ArrowsExpandIcon} /> */}
+        </BtnContainer>
+      </div>
+      {expanded && (
+        <StorageMeta
+          isPinned={true}
+          isPublic={false}
+          metaData="{ad;fkasdf;klams;dfklma;sdlkfma;slkdmfa;skdmf;alskdmf;alskmdf;alksmd;flaksmd;flkams;dlkfma;slkdmf;alksdmf;alskmdf;alksmdf}"
+        />
+      )}
+    </div>
+  );
+}
+
+function StorageMeta({ metaData, isPinned, isPublic }) {
+  return (
+    <div className="grid grid-cols-2 w-3/4 pb-4">
+      <p className="text-gray-500 py-1">
+        <span className="font-semibold pr-2">Pinned:</span>
+        {isPinned ? "true" : "false"}
+      </p>
+      <p className="text-gray-500 py-1">
+        <span className="font-semibold pr-2">Public: </span>
+        {isPublic ? "true" : "false"}
+      </p>
+      <p className="text-gray-500 py-1 col-span-2">
+        <span className="font-semibold pr-2">Metadata:</span>
+        <br></br>
+        {metaData ? metaData : "N/A"}
+      </p>
+    </div>
   );
 }
