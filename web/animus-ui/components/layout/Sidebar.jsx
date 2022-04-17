@@ -3,7 +3,7 @@ import { Menu } from "@headlessui/react";
 
 export default function Sidebar() {
   return (
-    <aside className="flex flex-col items-center w-60 h-screen overflow-hidden text-gray-400 bg-gray-900">
+    <aside className="h-screen sticky top-0 flex flex-col items-center w-60 text-gray-400 bg-gray-900">
       <a className="flex items-center w-full px-4 py-8 mt-3" href="#">
         <svg
           className="w-8 h-8 fill-current"
