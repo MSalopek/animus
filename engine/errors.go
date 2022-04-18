@@ -15,6 +15,8 @@ const (
 	ErrJWTExpired            = "JWT expired"
 	ErrJWTClaimUnprocessable = "unprocessable JWT"
 
-	ErrInvalidMeta  = "unprocessable meta field"
-	ErrUserNotFound = "user not found"
+	ErrInvalidMeta       = "unprocessable meta field"
+	ErrUserNotFound      = "user not found"
+	ErrInvalidQueryParam = "invalid query param"
+	ErrNotADirectory     = "not a directory"
 )

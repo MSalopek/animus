@@ -3,6 +3,7 @@ package repo
 import (
 	"github.com/msalopek/animus/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repo struct {
@@ -22,9 +23,19 @@ func (rpo *Repo) GetUserByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
-func (rpo *Repo) GetUserUploads(userID int) ([]model.Storage, error) {
+func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]model.Storage, error) {
 	var s []model.Storage
-	res := rpo.Where("user_id = ?", userID).Find(&s)
+	q := rpo.Where("user_id = ?", userID).
+		Limit(ctx.Limit).
+		Offset(ctx.Offset)
+	if ctx.OrderBy != "" {
+		q.Order(clause.OrderByColumn{
+			Column: clause.Column{Name: ctx.OrderBy},
+			Desc:   !ctx.Asc},
+		)
+
+	}
+	res := q.Find(&s)
 	if res.Error != nil {
 		return nil, res.Error
 	}

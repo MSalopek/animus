@@ -14,8 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// TODO: abstract the DB logic into a set of interfaces
-
 const defaultSecret = "pleaseDontUsethisstring"
 const defaultExpiration = 1 * time.Hour
 
@@ -72,13 +70,12 @@ func (api *HttpAPI) registerHandlers() {
 	)
 	auth.GET("/whoami", api.WhoAmI)
 	auth.POST("/storage/add", api.UploadFile)
-	auth.GET("/user/:id/storage", api.GetUserUploads)
-	// auth.GET("/storage/:cid", WIPresponder)
+	auth.GET("/storage/user", api.GetUserUploads)
+	auth.GET("/storage/ls/:cid", api.ListsDir)
 
-	// TODO
-	// auth.GET("/storage/ls/:cid", api.ProxyCommandLs)
+	// TODO:
 	// auth.POST("/storage/pin/:id", WIPresponder)
-	// auth.DELETE("/storage/delete/:id", WIPresponder)
+	// auth.POST("/storage/unpin/:id", WIPresponder)
 
 	// auth.POST("/gates/", WIPresponder)
 	// auth.GET("/gates/:id", WIPresponder)

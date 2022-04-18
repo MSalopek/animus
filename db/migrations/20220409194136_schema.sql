@@ -60,6 +60,9 @@ CREATE TABLE storage (
 		CHECK (deleted_at IS NULL OR deleted_at>=created_at),
 );
 
+CREATE INDEX storage_dirs_idx ON storage(dir);
+CREATE INDEX storage_user_cid_idx ON storage(user_id, cid);
+
 CREATE TABLE gateways (
 	id BIGSERIAL PRIMARY KEY,
 	user_id BIGINT REFERENCES users(id),

@@ -6,7 +6,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	shell "github.com/ipfs/go-ipfs-api"
 	"github.com/msalopek/animus/engine"
+	"github.com/msalopek/animus/engine/repo"
+	"gorm.io/gorm"
 )
 
 // UploadFile extracts a file from gin.Context (multipart form)
@@ -68,9 +71,9 @@ func (api *HttpAPI) UploadFile(c *gin.Context) {
 }
 
 func (api *HttpAPI) GetUserUploads(c *gin.Context) {
-	ctxUID := c.GetInt("userID")
-	// TODO: paginate with limit, offset
-	storage, err := api.repo.GetUserUploads(ctxUID)
+	uid := c.GetInt("userID")
+	ctx := repo.QueryCtxFromGin(c)
+	storage, err := api.repo.GetUserUploads(ctx, uid)
 	if err != nil {
 		abortWithError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -79,8 +82,42 @@ func (api *HttpAPI) GetUserUploads(c *gin.Context) {
 	c.JSON(http.StatusOK, storage)
 }
 
+func (api *HttpAPI) ListsDir(c *gin.Context) {
+	uid := c.GetInt("userID")
+	cid := c.Param("cid")
+	if cid == "" {
+		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+	}
+	storage, err := api.repo.GetUserUploadByCid(uid, cid)
+	if err != nil && err == gorm.ErrRecordNotFound {
+		abortWithError(c, http.StatusNotFound, engine.ErrNotFound)
+		return
+	}
+	if err != nil {
+		abortWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if !storage.Dir {
+		abortWithError(c, http.StatusBadRequest, engine.ErrNotADirectory)
+		return
+	}
+
+	data, err := api.ipfs.List(*storage.Cid)
+	if err != nil {
+		abortWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, ListResp{data})
+}
+
 func (api *HttpAPI) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "OK",
 	})
+}
+
+type ListResp struct {
+	Objects []*shell.LsLink `json:"Objects"`
 }
