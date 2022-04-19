@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Dialog } from "@headlessui/react";
 import { DocumentAddIcon, FolderAddIcon } from "@heroicons/react/solid";
 import {
   TrashIcon,
@@ -34,7 +33,6 @@ function StorageView() {
               Icon={DocumentAddIcon}
               title={"Add File"}
               action={() => {
-                console.log("CLICK 1", isFileModalOpen);
                 setIsFileModalOpen(true);
               }}
             />
@@ -42,7 +40,6 @@ function StorageView() {
               Icon={FolderAddIcon}
               title={"Add Directory"}
               action={() => {
-                console.log("CLICK 2", isFileModalOpen);
                 setIsFileModalOpen(false);
               }}
             />
