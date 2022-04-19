@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { Dialog } from "@headlessui/react";
 import { DocumentAddIcon, FolderAddIcon } from "@heroicons/react/solid";
 import {
   TrashIcon,
@@ -10,20 +11,41 @@ import {
 
 import { ModalBtn, BtnContainer, RoundActionBtn } from "../buttons/Buttons";
 import Pagination from "../pagination/Pagination";
+import FileUploadModal from "../modals/FileUploadModal";
 
 export default StorageView;
 
 function StorageView() {
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+
   return (
     <section className="bg-white dark:bg-gray-900">
+        <FileUploadModal
+        isOpen={isFileModalOpen}
+        setIsOpen={setIsFileModalOpen}
+      />
       <div className="container px-6 py-12 mx-auto">
         <div className="flex flex-col">
           <h1 className="text-3xl font-semibold text-gray-800 dark:text-white mb-2">
             Storage Manager
           </h1>
           <BtnContainer>
-            <ModalBtn Icon={DocumentAddIcon} title={"Add File"} />
-            <ModalBtn Icon={FolderAddIcon} title={"Add Directory"} />
+            <ModalBtn
+              Icon={DocumentAddIcon}
+              title={"Add File"}
+              action={() => {
+                console.log("CLICK 1", isFileModalOpen);
+                setIsFileModalOpen(true);
+              }}
+            />
+            <ModalBtn
+              Icon={FolderAddIcon}
+              title={"Add Directory"}
+              action={() => {
+                console.log("CLICK 2", isFileModalOpen);
+                setIsFileModalOpen(false);
+              }}
+            />
           </BtnContainer>
         </div>
 
