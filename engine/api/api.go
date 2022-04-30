@@ -17,13 +17,19 @@ import (
 const defaultSecret = "pleaseDontUsethisstring"
 const defaultExpiration = 1 * time.Hour
 
+type Publisher interface {
+	Publish(topic string, body []byte) error
+	Stop()
+}
+
 type HttpAPI struct {
-	engine *gin.Engine
-	server *http.Server
-	ipfs   *shell.Shell
-	repo   *repo.Repo
-	auth   *auth.Auth
-	logger *log.Logger
+	engine    *gin.Engine
+	server    *http.Server
+	ipfs      *shell.Shell
+	repo      *repo.Repo
+	auth      *auth.Auth
+	logger    *log.Logger
+	publisher Publisher
 
 	done chan struct{}
 	port string
@@ -123,6 +129,7 @@ func (api *HttpAPI) Stop() error {
 		return fmt.Errorf("HTTP server Shutdown: %v", err)
 	}
 
+	api.publisher.Stop()
 	api.logger.Info("graceful shutdown successful")
 	return nil
 }
