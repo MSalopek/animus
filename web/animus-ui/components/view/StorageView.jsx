@@ -1,27 +1,33 @@
-import { useState } from "react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { DocumentAddIcon, FolderAddIcon } from "@heroicons/react/solid";
+import { useState } from 'react';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { DocumentAddIcon, FolderAddIcon } from '@heroicons/react/solid';
 import {
   TrashIcon,
   InformationCircleIcon,
   // ArrowsExpandIcon,
   DuplicateIcon,
-} from "@heroicons/react/outline";
+} from '@heroicons/react/outline';
 
-import { ModalBtn, BtnContainer, RoundActionBtn } from "../buttons/Buttons";
-import Pagination from "../pagination/Pagination";
-import FileUploadModal from "../modals/FileUploadModal";
+import { ModalBtn, BtnContainer, RoundActionBtn } from '../buttons/Buttons';
+import Pagination from '../pagination/Pagination';
+import FileUploadModal from '../modals/FileUploadModal';
+import DirectoryUploadModal from '../modals/DirectoryUploadModal';
 
 export default StorageView;
 
 function StorageView() {
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [isDirModalOpen, setIsDirModalOpen] = useState(false);
 
   return (
     <section className="bg-white dark:bg-gray-900">
-        <FileUploadModal
+      <FileUploadModal
         isOpen={isFileModalOpen}
         setIsOpen={setIsFileModalOpen}
+      />
+      <DirectoryUploadModal
+        isOpen={isDirModalOpen}
+        setIsOpen={setIsDirModalOpen}
       />
       <div className="container px-6 py-12 mx-auto">
         <div className="flex flex-col">
@@ -31,16 +37,16 @@ function StorageView() {
           <BtnContainer>
             <ModalBtn
               Icon={DocumentAddIcon}
-              title={"Add File"}
+              title={'Add File'}
               action={() => {
                 setIsFileModalOpen(true);
               }}
             />
             <ModalBtn
               Icon={FolderAddIcon}
-              title={"Add Directory"}
+              title={'Add Directory'}
               action={() => {
-                setIsFileModalOpen(false);
+                setIsDirModalOpen(true);
               }}
             />
           </BtnContainer>
@@ -71,7 +77,7 @@ function StorageRow() {
             QmVaTLF6H23B7tno8REwSFxT8J21aWEnaSTpTzNM6sRi6b
           </span>
           <CopyToClipboard
-            text={"QmVaTLF6H23B7tno8REwSFxT8J21aWEnaSTpTzNM6sRi6b"}
+            text={'QmVaTLF6H23B7tno8REwSFxT8J21aWEnaSTpTzNM6sRi6b'}
           >
             <RoundActionBtn Icon={DuplicateIcon} />
           </CopyToClipboard>
@@ -102,16 +108,16 @@ function StorageMeta({ metaData, isPinned, isPublic }) {
     <div className="grid grid-cols-2 w-3/4 pb-4">
       <p className="text-gray-500 py-1">
         <span className="font-semibold pr-2">Pinned:</span>
-        {isPinned ? "true" : "false"}
+        {isPinned ? 'true' : 'false'}
       </p>
       <p className="text-gray-500 py-1">
         <span className="font-semibold pr-2">Public: </span>
-        {isPublic ? "true" : "false"}
+        {isPublic ? 'true' : 'false'}
       </p>
       <p className="text-gray-500 py-1 col-span-2">
         <span className="font-semibold pr-2">Metadata:</span>
         <br></br>
-        {metaData ? metaData : "N/A"}
+        {metaData ? metaData : 'N/A'}
       </p>
     </div>
   );
