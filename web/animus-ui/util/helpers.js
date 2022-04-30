@@ -20,6 +20,17 @@ export function slugify(string) {
     .replace(/-+$/, "");
 }
 
+
+export function unslugify(string) {
+  return string
+    .toString()
+    .trim()
+    .replace("__", " ")
+    .replace("--", " ")
+    .replace("-", " ")
+    .replace("_", " ");
+}
+
 export function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
