@@ -75,7 +75,8 @@ func (api *HttpAPI) registerHandlers() {
 		authorizeUser(api.repo),
 	)
 	auth.GET("/whoami", api.WhoAmI)
-	auth.POST("/storage/add", api.UploadFile)
+	auth.POST("/storage/add-file", api.UploadFile)
+	auth.POST("/storage/add-dir", api.UploadFile)
 	auth.GET("/storage/user", api.GetUserUploads)
 	auth.GET("/storage/ls/:cid", api.ListsDir)
 
