@@ -10,6 +10,11 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- CREATE DOMAIN domain_slug AS TEXT
 -- 	CHECK (VALUE~'^[a-z0-9\-]{1,32}$');
 
+CREATE TYPE upload_stage AS ENUM (
+	"storage",
+	"ipfs"
+);
+
 CREATE TABLE users (
 	id BIGSERIAL PRIMARY KEY,
 	username VARCHAR(32) UNIQUE NOT NULL,
@@ -40,10 +45,10 @@ CREATE TABLE storage (
 	name VARCHAR(1024) NOT NULL,
 	dir BOOLEAN NOT NULL DEFAULT false, -- true if the CID is used by a directory
 	public BOOLEAN NOT NULL DEFAULT false,
-	local BOOLEAN NOT NULL DEFAULT false,
-	local_path VARCHAR(1024),
+	storage_bucket VARCHAR(1024),
+	storage_key VARCHAR(1024),
 	hash VARCHAR(1024),
-	uploaded BOOLEAN NOT NULL DEFAULT false,
+	upload_stage UPLOAD_STAGE,
 	pinned BOOLEAN NOT NULL DEFAULT false,
 	-- JSON data referencing any previous file versions
 	-- check the versions column to fetch any previous versions if they stil exist

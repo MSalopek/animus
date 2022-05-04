@@ -3,14 +3,13 @@ package api
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	shell "github.com/ipfs/go-ipfs-api"
 	"github.com/msalopek/animus/engine/api/auth"
 	"github.com/msalopek/animus/engine/repo"
+	"github.com/msalopek/animus/storage"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,34 +21,47 @@ type Publisher interface {
 	Stop()
 }
 
+type Config struct {
+	AuthSecret          string `json:"auth_secret,omitempty" yaml:"auth_secret,omitempty"`
+	AuthAuthority       string `json:"auth_authority,omitempty" yaml:"auth_authority,omitempty"`
+	AuthExpirationHours string `json:"auth_expiration_hours,omitempty" yaml:"auth_expiration_hours,omitempty"`
+	HttpPort            string `json:"http_port,omitempty" yaml:"http_port,omitempty"`
+	LogLevel            string `json:"log_level,omitempty" yaml:"log_level,omitempty"`
+
+	Bucket  string         `json:"bucket,omitempty" yaml:"bucket,omitempty"`
+	Storage storage.Config `json:"storage,omitempty" yaml:"storage,omitempty"`
+}
+
 type HttpAPI struct {
 	engine    *gin.Engine
 	server    *http.Server
-	ipfs      *shell.Shell
+	storage   *storage.Manager
 	repo      *repo.Repo
 	auth      *auth.Auth
 	logger    *log.Logger
 	publisher Publisher
 
 	done chan struct{}
-	port string
+
+	cfg *Config
 }
 
-func New(port string, ipfsURL string, repo *repo.Repo, logger *log.Logger, done chan struct{}) *HttpAPI {
+func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *HttpAPI {
+	if cfg == nil {
+		panic("config must be provided")
+	}
 	if repo == nil {
 		panic("Repo must be provided")
 	}
 
 	engine := gin.New()
-	shell := shell.NewShell(ipfsURL)
 	s := &HttpAPI{
 		engine: engine,
 		server: &http.Server{
-			Addr:    port,
+			Addr:    cfg.HttpPort,
 			Handler: engine,
 		},
 		repo: repo,
-		ipfs: shell,
 		auth: &auth.Auth{
 			Secret:          defaultSecret,
 			Authority:       "AnimusEngine",
@@ -78,7 +90,6 @@ func (api *HttpAPI) registerHandlers() {
 	auth.POST("/storage/add-file", api.UploadFile)
 	auth.POST("/storage/add-dir", api.UploadFile)
 	auth.GET("/storage/user", api.GetUserUploads)
-	auth.GET("/storage/ls/:cid", api.ListsDir)
 
 	// TODO:
 	// auth.POST("/storage/pin/:id", WIPresponder)
@@ -133,12 +144,4 @@ func (api *HttpAPI) Stop() error {
 	api.publisher.Stop()
 	api.logger.Info("graceful shutdown successful")
 	return nil
-}
-
-func (api *HttpAPI) IPFSUpload(r io.Reader) (string, error) {
-	fileHash, err := api.ipfs.Add(r)
-	if err != nil {
-		return "", err
-	}
-	return fileHash, nil
 }

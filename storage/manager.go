@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -40,6 +42,19 @@ type Manager struct {
 	*minio.Client
 	conf  Config
 	rules *lifecycle.Configuration // defines bucket lifecycle
+}
+
+// Basic upload metadata.
+type Upload struct {
+	Bucket       string    `json:"bucket,omitempty"`
+	Key          string    `json:"key,omitempty"`
+	Location     string    `json:"bucket,omitempty"`
+	LastModified time.Time `json:"last_modified,omitempty"`
+	Size         int64     `json:"size,omitempty"`
+}
+
+type UploadInfo struct {
+	Uploads []Upload `json:"uploads"`
 }
 
 // Initializes new manager with provided configuration.
@@ -117,8 +132,8 @@ func (m *Manager) SafeCreateBucket(ctx context.Context, bucket, region string) e
 }
 
 // Recursively upload directory to bucket. Create bucket if it does not exist.
-// In case of errors on upload the content fill be partially uploaded.
-func (m *Manager) UploadDir(ctx context.Context, path, bucket string, opts Opts) error {
+// In case of errors on upload the content will be partially uploaded.
+func (m *Manager) FSUploadDir(ctx context.Context, path, bucket string, opts Opts) error {
 	loc := m.conf.Region
 	if opts.Region != "" {
 		loc = opts.Region
@@ -143,8 +158,8 @@ func (m *Manager) UploadDir(ctx context.Context, path, bucket string, opts Opts)
 }
 
 // Recursively upload directory to expireable bucket. Create bucket if it does not exist.
-// In case of errors on upload the content fill be partially uploaded.
-func (m *Manager) UploadExpireableDir(ctx context.Context, path, bucket string, opts Opts) error {
+// In case of errors on upload the content will be partially uploaded.
+func (m *Manager) FSUploadExpireableDir(ctx context.Context, path, bucket string, opts Opts) error {
 	loc := m.conf.Region
 	if opts.Region != "" {
 		loc = opts.Region
@@ -168,8 +183,70 @@ func (m *Manager) UploadExpireableDir(ctx context.Context, path, bucket string, 
 	return nil
 }
 
-// Upload single file to bucket.
-func (m *Manager) UploadFile(ctx context.Context, path, bucket string, opts Opts) error {
+// func (c *Client) PutObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64,
+// 	opts PutObjectOptions,
+
+// Upload single file from stream to bucket.
+// On error file upload is aborted.
+func (m *Manager) StreamFile(ctx context.Context, bucket, fname string, reader io.Reader, size int64, opts Opts) (*UploadInfo, error) {
+	loc := m.conf.Region
+	if opts.Region != "" {
+		loc = opts.Region
+	}
+
+	if err := m.SafeCreateBucket(ctx, bucket, loc); err != nil {
+		return nil, err
+	}
+
+	info, err := m.PutObject(ctx, bucket, fname, reader, size, minio.PutObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return &UploadInfo{
+		Uploads: []Upload{
+			{
+				Bucket:       info.Bucket,
+				Key:          info.Key,
+				Location:     info.Location,
+				Size:         info.Size,
+				LastModified: info.LastModified,
+			},
+		},
+	}, nil
+}
+
+// Upload single file from stream to expirable bucket.
+func (m *Manager) StreamExpirableFile(ctx context.Context, bucket, fname string, reader io.Reader, size int64, opts Opts) (*UploadInfo, error) {
+	loc := m.conf.Region
+	if opts.Region != "" {
+		loc = opts.Region
+	}
+
+	if err := m.SafeCreateExpirableBucket(ctx, bucket, loc); err != nil {
+		return nil, err
+	}
+
+	info, err := m.PutObject(ctx, bucket, fname, reader, size, minio.PutObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return &UploadInfo{
+		Uploads: []Upload{
+			{
+				Bucket:       info.Bucket,
+				Key:          info.Key,
+				Location:     info.Location,
+				Size:         info.Size,
+				LastModified: info.LastModified,
+			},
+		},
+	}, nil
+}
+
+// Upload single file from filesystem to bucket.
+func (m *Manager) FSUploadFile(ctx context.Context, bucket, path string, opts Opts) error {
 	loc := m.conf.Region
 	if opts.Region != "" {
 		loc = opts.Region
@@ -194,8 +271,8 @@ func (m *Manager) UploadFile(ctx context.Context, path, bucket string, opts Opts
 	return nil
 }
 
-// Upload single file to expirable bucket.
-func (m *Manager) UploadExpirableFile(ctx context.Context, path, bucket string, opts Opts) error {
+// Upload single file from filesystem to expirable bucket.
+func (m *Manager) FSUploadExpirableFile(ctx context.Context, bucket, path string, opts Opts) error {
 	loc := m.conf.Region
 	if opts.Region != "" {
 		loc = opts.Region
@@ -236,8 +313,40 @@ func (m *Manager) DownloadBucket(ctx context.Context, bucket string) (string, er
 	return dir, nil
 }
 
-// Recursively download bucket contents, tar.gz on destination and return path to downloaded file.
-func (m *Manager) DownloadBucketTarGz(ctx context.Context, bucket string) (string, error) {
+// Recursively download folder contents and return path to downloaded files.
+// Dir represents a bucket prefix from which the recursive directory traversal will start.
+func (m *Manager) DownloadDir(ctx context.Context, bucket, dir string) (string, error) {
+	if bucket == "" {
+		return "", errors.New("bucket not provided")
+	}
+	if dir == "" {
+		return "", errors.New("folder path not provided")
+	}
+
+	dir, err := ioutil.TempDir(m.conf.TmpDir, m.conf.TmpDirPrefix)
+	if err != nil {
+		return "", err
+	}
+
+	for c := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Recursive: true, Prefix: dir}) {
+		err := m.DownloadFileToDir(ctx, dir, c.Key, bucket)
+		if err != nil {
+			return "", err
+		}
+	}
+	return dir, nil
+}
+
+// Recursively download directory contents, tar.gz on destination and return path to downloaded file.
+// Dir represents a bucket prefix from which the recursive directory traversal will start.
+func (m *Manager) DownloadDirTarGz(ctx context.Context, bucket, dir string) (string, error) {
+	if bucket == "" {
+		return "", errors.New("bucket not provided")
+	}
+	if dir == "" {
+		return "", errors.New("folder path not provided")
+	}
+
 	dir, err := ioutil.TempDir(m.conf.TmpDir, m.conf.TmpDirPrefix)
 	if err != nil {
 		return "", err
@@ -252,7 +361,7 @@ func (m *Manager) DownloadBucketTarGz(ctx context.Context, bucket string) (strin
 
 	zw := gzip.NewWriter(fileW)
 	tw := tar.NewWriter(zw)
-	for c := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Recursive: true}) {
+	for c := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Recursive: true, Prefix: dir}) {
 		object, err := m.GetObject(ctx, bucket, c.Key, minio.GetObjectOptions{})
 		if err != nil {
 			return "", nil
@@ -295,7 +404,7 @@ func (m *Manager) DownloadBucketTarGz(ctx context.Context, bucket string) (strin
 }
 
 // Download a single file from bucket and store it to a temp folder returning the path to tempfile.
-func (m *Manager) DownloadFileToTmp(ctx context.Context, fname, bucket string) (string, error) {
+func (m *Manager) DownloadFileToTmp(ctx context.Context, bucket, fname string) (string, error) {
 	// just create dir, someone else needs to remove.
 	dir, err := ioutil.TempDir(m.conf.TmpDir, m.conf.TmpDirPrefix)
 	if err != nil {
@@ -312,7 +421,7 @@ func (m *Manager) DownloadFileToTmp(ctx context.Context, fname, bucket string) (
 }
 
 // Download a single file from bucket and store it to the dir returning path to the file.
-func (m *Manager) DownloadFileToDir(ctx context.Context, dir, fname, bucket string) error {
+func (m *Manager) DownloadFileToDir(ctx context.Context, bucket, dir, fname string) error {
 	if _, err := os.Stat(dir); err != nil {
 		return nil
 	}
