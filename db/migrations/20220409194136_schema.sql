@@ -11,8 +11,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 	CHECK (VALUE~'^[a-z0-9\-]{1,32}$');
 
 CREATE TYPE upload_stage AS ENUM (
-	"storage",
-	"ipfs"
+	'storage',
+	'ipfs'
 );
 
 CREATE TABLE users (
@@ -62,7 +62,7 @@ CREATE TABLE storage (
 	CONSTRAINT storage_updated_at
 		CHECK (updated_at>=created_at),
 	CONSTRAINT storage_deleted_at
-		CHECK (deleted_at IS NULL OR deleted_at>=created_at),
+		CHECK (deleted_at IS NULL OR deleted_at>=created_at)
 );
 
 CREATE INDEX storage_dirs_idx ON storage(dir);
@@ -102,3 +102,4 @@ DROP TABLE gateways;
 DROP TABLE storage;
 DROP TABLE subscriptions;
 DROP TABLE users;
+DROP TYPE upload_stage;

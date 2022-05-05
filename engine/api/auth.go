@@ -38,7 +38,7 @@ func (c *Credentials) Validate() error {
 	}
 	return nil
 }
-func (api *HttpAPI) Register(c *gin.Context) {
+func (api *AnimusAPI) Register(c *gin.Context) {
 	var creds Credentials
 
 	if err := c.BindJSON(&creds); err != nil {
@@ -70,7 +70,7 @@ func (api *HttpAPI) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-func (api *HttpAPI) Login(c *gin.Context) {
+func (api *AnimusAPI) Login(c *gin.Context) {
 	var creds Credentials
 
 	// TODO: log body for debugging
@@ -104,7 +104,7 @@ func (api *HttpAPI) Login(c *gin.Context) {
 	})
 }
 
-func (api *HttpAPI) WhoAmI(c *gin.Context) {
+func (api *AnimusAPI) WhoAmI(c *gin.Context) {
 	email := c.GetString("email")
 	if len(email) < 1 {
 		abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)

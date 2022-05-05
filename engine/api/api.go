@@ -7,32 +7,18 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/api/auth"
 	"github.com/msalopek/animus/engine/repo"
 	"github.com/msalopek/animus/storage"
 	log "github.com/sirupsen/logrus"
 )
 
-const defaultSecret = "pleaseDontUsethisstring"
-const defaultExpiration = 1 * time.Hour
-
 type Publisher interface {
 	Publish(topic string, body []byte) error
 	Stop()
 }
-
-type Config struct {
-	AuthSecret          string `json:"auth_secret,omitempty" yaml:"auth_secret,omitempty"`
-	AuthAuthority       string `json:"auth_authority,omitempty" yaml:"auth_authority,omitempty"`
-	AuthExpirationHours string `json:"auth_expiration_hours,omitempty" yaml:"auth_expiration_hours,omitempty"`
-	HttpPort            string `json:"http_port,omitempty" yaml:"http_port,omitempty"`
-	LogLevel            string `json:"log_level,omitempty" yaml:"log_level,omitempty"`
-
-	Bucket  string         `json:"bucket,omitempty" yaml:"bucket,omitempty"`
-	Storage storage.Config `json:"storage,omitempty" yaml:"storage,omitempty"`
-}
-
-type HttpAPI struct {
+type AnimusAPI struct {
 	engine    *gin.Engine
 	server    *http.Server
 	storage   *storage.Manager
@@ -43,10 +29,10 @@ type HttpAPI struct {
 
 	done chan struct{}
 
-	cfg *Config
+	cfg *engine.Config
 }
 
-func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *HttpAPI {
+func New(cfg *engine.Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *AnimusAPI {
 	if cfg == nil {
 		panic("config must be provided")
 	}
@@ -55,7 +41,9 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 	}
 
 	engine := gin.New()
-	s := &HttpAPI{
+	s := &AnimusAPI{
+		cfg: cfg,
+
 		engine: engine,
 		server: &http.Server{
 			Addr:    cfg.HttpPort,
@@ -63,19 +51,20 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 		},
 		repo: repo,
 		auth: &auth.Auth{
-			Secret:          defaultSecret,
-			Authority:       "AnimusEngine",
-			ExpirationHours: defaultExpiration,
+			Secret:          cfg.AuthSecret,
+			Authority:       cfg.AuthAuthority,
+			ExpirationHours: time.Duration(cfg.AuthExpirationHours) * time.Hour,
 		},
-		done:   done,
-		logger: logger,
+		storage: storage.MustNewManager(cfg.Storage),
+		done:    done,
+		logger:  logger,
 	}
 
 	engine.Use(requestLogger(logger))
 	return s
 }
 
-func (api *HttpAPI) registerHandlers() {
+func (api *AnimusAPI) registerHandlers() {
 	root := api.engine.Group("/api")
 
 	root.GET("/ping", api.Ping)
@@ -88,7 +77,7 @@ func (api *HttpAPI) registerHandlers() {
 	)
 	auth.GET("/whoami", api.WhoAmI)
 	auth.POST("/storage/add-file", api.UploadFile)
-	auth.POST("/storage/add-dir", api.UploadFile)
+	auth.POST("/storage/add-dir", api.UploadDir)
 	auth.GET("/storage/user", api.GetUserUploads)
 
 	// TODO:
@@ -104,11 +93,11 @@ func (api *HttpAPI) registerHandlers() {
 	// auth.GET("/gates/user/:id", WIPresponder)
 }
 
-func (api *HttpAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (api *AnimusAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	api.engine.ServeHTTP(w, r)
 }
 
-func (api *HttpAPI) Start() error {
+func (api *AnimusAPI) Start() error {
 	api.registerHandlers()
 	api.logger.Info("starting wallet service")
 	err := api.server.ListenAndServe()
@@ -124,7 +113,7 @@ func (api *HttpAPI) Start() error {
 	return err
 }
 
-func (api *HttpAPI) Stop() error {
+func (api *AnimusAPI) Stop() error {
 	api.logger.Info("graceful shutdown initiated")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -141,7 +130,7 @@ func (api *HttpAPI) Stop() error {
 		return fmt.Errorf("HTTP server Shutdown: %v", err)
 	}
 
-	api.publisher.Stop()
+	// api.publisher.Stop()
 	api.logger.Info("graceful shutdown successful")
 	return nil
 }

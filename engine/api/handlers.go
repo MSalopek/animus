@@ -16,7 +16,7 @@ import (
 
 // UploadFile extracts a file from gin.Context (multipart form)
 // and synchronously uploads it to default storage bucket.
-func (api *HttpAPI) UploadFile(c *gin.Context) {
+func (api *AnimusAPI) UploadFile(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 
 	file, err := c.FormFile("file")
@@ -25,18 +25,20 @@ func (api *HttpAPI) UploadFile(c *gin.Context) {
 		return
 	}
 
-	objPath := fmt.Sprintf("%s/%s", ctxUID, file.Filename)
+	objPath := fmt.Sprintf("%d/%s", ctxUID, file.Filename)
 	info, err := api.uploadFile(file, objPath)
 	if err != nil {
 		abortWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	stage := model.UploadStageStorage
 	storage := &model.Storage{
 		UserID:        int64(ctxUID),
 		Name:          file.Filename,
 		StorageBucket: &info.Bucket,
 		StorageKey:    &info.Key,
+		UploadStage:   &stage,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
@@ -55,7 +57,7 @@ func (api *HttpAPI) UploadFile(c *gin.Context) {
 
 // UploadDir extracts a files from gin.Context (multipart form)
 // and synchronously uploads them it to default storage bucket.
-func (api *HttpAPI) UploadDir(c *gin.Context) {
+func (api *AnimusAPI) UploadDir(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 
 	dirname := c.PostForm("name")
@@ -70,9 +72,9 @@ func (api *HttpAPI) UploadDir(c *gin.Context) {
 	}
 
 	meta := storage.Uploads{}
-	files := form.File["upload[]"]
+	files := form.File["files"]
 	for _, f := range files {
-		objPath := fmt.Sprintf("%s/%s/%s", ctxUID, dirname, f.Filename)
+		objPath := fmt.Sprintf("%d/%s/%s", ctxUID, dirname, f.Filename)
 		info, err := api.uploadFile(f, objPath)
 		if err != nil {
 			abortWithError(c, http.StatusInternalServerError, err.Error())
@@ -87,13 +89,15 @@ func (api *HttpAPI) UploadDir(c *gin.Context) {
 	}
 
 	// key is faked because dirs are not objects in s3 storage
-	key := fmt.Sprintf("%s/%s", ctxUID, dirname)
+	key := fmt.Sprintf("%d/%s", ctxUID, dirname)
+	stage := model.UploadStageStorage
 	storage := &model.Storage{
 		UserID:        int64(ctxUID),
 		Name:          dirname,
 		Dir:           true,
 		StorageBucket: &meta.Uploads[0].Bucket,
 		StorageKey:    &key,
+		UploadStage:   &stage,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
@@ -110,7 +114,7 @@ func (api *HttpAPI) UploadDir(c *gin.Context) {
 	c.JSON(http.StatusCreated, storage)
 }
 
-func (api *HttpAPI) GetUserUploads(c *gin.Context) {
+func (api *AnimusAPI) GetUserUploads(c *gin.Context) {
 	uid := c.GetInt("userID")
 	ctx := repo.QueryCtxFromGin(c)
 	storage, err := api.repo.GetUserUploads(ctx, uid)
@@ -122,13 +126,13 @@ func (api *HttpAPI) GetUserUploads(c *gin.Context) {
 	c.JSON(http.StatusOK, storage)
 }
 
-func (api *HttpAPI) Ping(c *gin.Context) {
+func (api *AnimusAPI) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "OK",
 	})
 }
 
-func (api *HttpAPI) uploadFile(file *multipart.FileHeader, objName string) (*storage.Upload, error) {
+func (api *AnimusAPI) uploadFile(file *multipart.FileHeader, objName string) (*storage.Upload, error) {
 	src, err := file.Open()
 	if err != nil {
 		return nil, err

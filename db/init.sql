@@ -23,6 +23,11 @@ SET row_security = off;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
 
+CREATE TYPE public.upload_stage AS ENUM (
+	'storage',
+	'ipfs'
+);
+
 --
 -- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
 --
@@ -118,10 +123,10 @@ CREATE TABLE public.storage (
     name character varying(1024) NOT NULL,
     dir boolean DEFAULT false NOT NULL,
     public boolean DEFAULT false NOT NULL,
-    local boolean DEFAULT false NOT NULL,
-    local_path character varying(1024),
-    hash character varying(1024),
-    uploaded boolean DEFAULT false NOT NULL,
+	storage_bucket VARCHAR(1024),
+	storage_key VARCHAR(1024),
+	hash VARCHAR(1024),
+	upload_stage public.upload_stage,
     pinned boolean DEFAULT false NOT NULL,
     versions jsonb DEFAULT '{}'::jsonb,
     metadata jsonb DEFAULT '{}'::jsonb,
@@ -300,7 +305,7 @@ COPY public.goose_db_version (id, version_id, is_applied, tstamp) FROM stdin;
 -- Data for Name: storage; Type: TABLE DATA; Schema: public; Owner: animus
 --
 
-COPY public.storage (id, cid, user_id, name, dir, public, local, local_path, hash, uploaded, pinned, versions, metadata, created_at, updated_at, deleted_at) FROM stdin;
+COPY public.storage (id, cid, user_id, name, dir, public, storage_bucket, storage_key, hash, upload_stage, pinned, versions, metadata, created_at, updated_at, deleted_at) FROM stdin;
 \.
 
 

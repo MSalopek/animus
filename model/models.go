@@ -8,6 +8,11 @@ import (
 	"gorm.io/datatypes"
 )
 
+const (
+	UploadStageIPFS    = "ipfs"
+	UploadStageStorage = "storage"
+)
+
 type User struct {
 	ID        int64      `json:"id" gorm:"primaryKey"`
 	Username  string     `json:"username"`

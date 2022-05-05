@@ -20,19 +20,6 @@ import (
 )
 
 // TODO: write some integration tests for this
-
-type Config struct {
-	Lifetime     int    `json:"lifetime" yaml:"lifetime"` // DAYS before bucket expiration
-	Region       string `json:"region" yaml:"region"`
-	Endpoint     string `json:"endpoint" yaml:"endpoint"`
-	TmpDir       string `json:"tmp_dir" yaml:"tmp_dir"`               // path to temp directory on disk for storing downloads
-	TmpDirPrefix string `json:"tmp_dir_prefix" yaml:"tmp_dir_prefix"` // prefix for files and dirs in temp directory
-
-	AccessKeyID     string `json:"access_key_id" yaml:"access_key_id"`         // admin/root access credentials
-	AccessKeySecret string `json:"access_key_secret" yaml:"access_key_secret"` // admin/root access credentials
-	AccessToken     string `json:"access_token" yaml:"access_token"`
-}
-
 type Opts struct {
 	Region       string
 	LifetimeDays int
