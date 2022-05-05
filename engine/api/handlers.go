@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/repo"
 	"github.com/msalopek/animus/model"
 	"github.com/msalopek/animus/storage"
@@ -20,15 +19,6 @@ import (
 func (api *HttpAPI) UploadFile(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 
-	meta := c.PostForm("meta")
-	var parsed map[string]interface{}
-	// TODO: currently this is just unmarshalled to validate JSON
-	if err := json.Unmarshal([]byte(meta), &parsed); err != nil {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidMeta)
-		return
-	}
-
-	// Source
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.String(http.StatusBadRequest, "get form err: %s", err.Error())
@@ -75,11 +65,11 @@ func (api *HttpAPI) UploadDir(c *gin.Context) {
 
 	form, err := c.MultipartForm()
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, res.Error.Error())
+		abortWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	meta := storage.UploadInfo{}
+	meta := storage.Uploads{}
 	files := form.File["upload[]"]
 	for _, f := range files {
 		objPath := fmt.Sprintf("%s/%s/%s", ctxUID, dirname, f.Filename)
@@ -88,21 +78,27 @@ func (api *HttpAPI) UploadDir(c *gin.Context) {
 			abortWithError(c, http.StatusInternalServerError, err.Error())
 			return
 		}
-		meta = append(meta, info)
+		meta.Uploads = append(meta.Uploads, info)
 	}
 
+	if len(meta.Uploads) < 1 {
+		abortWithError(c, http.StatusInternalServerError, "something went wrong")
+		return
+	}
+
+	// key is faked because dirs are not objects in s3 storage
+	key := fmt.Sprintf("%s/%s", ctxUID, dirname)
 	storage := &model.Storage{
 		UserID:        int64(ctxUID),
 		Name:          dirname,
 		Dir:           true,
 		StorageBucket: &meta.Uploads[0].Bucket,
-		// key is faked because dirs don't have keys in s3 compatible storage
-		StorageKey: fmt.Sprintf("%s/%s", ctxUID, dirname),
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		StorageKey:    &key,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 
-	if buf, err := json.Marshal(info); err == nil {
+	if buf, err := json.Marshal(meta); err == nil {
 		storage.Metadata = buf
 	}
 
@@ -132,7 +128,7 @@ func (api *HttpAPI) Ping(c *gin.Context) {
 	})
 }
 
-func (api *HttpAPI) uploadFile(file *multipart.FileHeader, objName string) (storage.UploadInfo, error) {
+func (api *HttpAPI) uploadFile(file *multipart.FileHeader, objName string) (*storage.Upload, error) {
 	src, err := file.Open()
 	if err != nil {
 		return nil, err

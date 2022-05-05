@@ -53,8 +53,8 @@ type Upload struct {
 	Size         int64     `json:"size,omitempty"`
 }
 
-type UploadInfo struct {
-	Uploads []Upload `json:"uploads"`
+type Uploads struct {
+	Uploads []*Upload `json:"uploads"`
 }
 
 // Initializes new manager with provided configuration.
@@ -188,7 +188,7 @@ func (m *Manager) FSUploadExpireableDir(ctx context.Context, path, bucket string
 
 // Upload single file from stream to bucket.
 // On error file upload is aborted.
-func (m *Manager) StreamFile(ctx context.Context, bucket, fname string, reader io.Reader, size int64, opts Opts) (*UploadInfo, error) {
+func (m *Manager) StreamFile(ctx context.Context, bucket, fname string, reader io.Reader, size int64, opts Opts) (*Upload, error) {
 	loc := m.conf.Region
 	if opts.Region != "" {
 		loc = opts.Region
@@ -203,21 +203,17 @@ func (m *Manager) StreamFile(ctx context.Context, bucket, fname string, reader i
 		return nil, err
 	}
 
-	return &UploadInfo{
-		Uploads: []Upload{
-			{
-				Bucket:       info.Bucket,
-				Key:          info.Key,
-				Location:     info.Location,
-				Size:         info.Size,
-				LastModified: info.LastModified,
-			},
-		},
+	return &Upload{
+		Bucket:       info.Bucket,
+		Key:          info.Key,
+		Location:     info.Location,
+		Size:         info.Size,
+		LastModified: info.LastModified,
 	}, nil
 }
 
 // Upload single file from stream to expirable bucket.
-func (m *Manager) StreamExpirableFile(ctx context.Context, bucket, fname string, reader io.Reader, size int64, opts Opts) (*UploadInfo, error) {
+func (m *Manager) StreamExpirableFile(ctx context.Context, bucket, fname string, reader io.Reader, size int64, opts Opts) (*Upload, error) {
 	loc := m.conf.Region
 	if opts.Region != "" {
 		loc = opts.Region
@@ -232,16 +228,12 @@ func (m *Manager) StreamExpirableFile(ctx context.Context, bucket, fname string,
 		return nil, err
 	}
 
-	return &UploadInfo{
-		Uploads: []Upload{
-			{
-				Bucket:       info.Bucket,
-				Key:          info.Key,
-				Location:     info.Location,
-				Size:         info.Size,
-				LastModified: info.LastModified,
-			},
-		},
+	return &Upload{
+		Bucket:       info.Bucket,
+		Key:          info.Key,
+		Location:     info.Location,
+		Size:         info.Size,
+		LastModified: info.LastModified,
 	}, nil
 }
 
