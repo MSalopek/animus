@@ -117,7 +117,7 @@
 					"name": "Storage",
 					"item": [
 						{
-							"name": "Add Single File",
+							"name": "Add File",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -133,17 +133,18 @@
 										{
 											"key": "file",
 											"type": "file",
-											"src": "/home/msalopek/projects/go-uof-sdk-master.zip"
+											"src": "/home/msalopek/projects/hands_small.png"
 										},
 										{
-											"key": "meta",
-											"value": "{\"super\": \"metadatastuff\"}",
-											"type": "text"
+											"key": "",
+											"value": "",
+											"type": "text",
+											"disabled": true
 										}
 									]
 								},
 								"url": {
-									"raw": "localhost:8083/api/auth/storage/add",
+									"raw": "localhost:8083/api/auth/storage/add-file",
 									"host": [
 										"localhost"
 									],
@@ -152,7 +153,61 @@
 										"api",
 										"auth",
 										"storage",
-										"add"
+										"add-file"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Directory",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "files",
+											"type": "file",
+											"src": "/home/msalopek/projects/go-uof-sdk-master.zip"
+										},
+										{
+											"key": "name",
+											"value": "test-dir-user-1",
+											"type": "text"
+										},
+										{
+											"key": "files",
+											"type": "file",
+											"src": "/home/msalopek/projects/logo za stranicu.zip"
+										}
+									]
+								},
+								"url": {
+									"raw": "localhost:8083/api/auth/storage/add-dir",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"api",
+										"auth",
+										"storage",
+										"add-dir"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "test-dir",
+											"disabled": true
+										}
 									]
 								}
 							},
