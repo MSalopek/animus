@@ -29,9 +29,9 @@ type Pinner struct {
 
 	repo *repo.Repo
 
-	Messages              chan []byte
-	subscriber            queue.Subscriber
-	maxConcurrentRequests int
+	Messages   chan []byte
+	subscriber queue.Subscriber
+	rateLimit  chan struct{}
 
 	producer *nsq.Producer
 
@@ -41,16 +41,16 @@ type Pinner struct {
 
 func New(conf *Config, repo *repo.Repo, logger *log.Logger) *Pinner {
 	p := &Pinner{
-		conf:                  conf,
-		logger:                logger,
-		sm:                    storage.MustNewManager(conf.Storage),
-		sh:                    shell.NewShell(conf.NodeApiURL),
-		maxConcurrentRequests: conf.MaxConcurrentRequests,
+		conf:      conf,
+		logger:    logger,
+		sm:        storage.MustNewManager(conf.Storage),
+		sh:        shell.NewShell(conf.NodeApiURL),
+		rateLimit: make(chan struct{}, defaultMaxConcurrentRequests),
 
 		Messages: make(chan []byte),
 	}
 	if conf.MaxConcurrentRequests < 1 {
-		p.maxConcurrentRequests = defaultMaxConcurrentRequests
+		p.rateLimit = make(chan struct{}, defaultMaxConcurrentRequests)
 	}
 	p.subscriber = queue.MustNewSubscriber(
 		conf.SubscribeTopic,
@@ -82,11 +82,13 @@ func (p *Pinner) SetAutopin(val bool) {
 // All in-flight requests will be processed before terminating.
 func (p *Pinner) handlePinRequests(wg *sync.WaitGroup) {
 	for m := range p.Messages {
+		// primitive rate limiting
+		p.rateLimit <- struct{}{}
+
 		if m == nil {
 			log.WithFields(log.Fields{"func": "handlePinRequests"}).Error("got nil message")
 			break
 		}
-
 		req := &queue.PinRequest{}
 		if err := req.Unmarshal(m); err != nil {
 			log.WithFields(log.Fields{"func": "handlePinRequests"}).Error(err)
@@ -121,6 +123,8 @@ func (p *Pinner) handleAdd(wg *sync.WaitGroup, req *queue.PinRequest) {
 			"hash":    hash,
 			"request": fmt.Sprintf("%#v", req),
 		}).Info("uploaded pin request")
+	// primitive rate limiting
+	<-p.rateLimit
 }
 
 // Add uploads and pins file or directory under pr.Key to IPFS using StorageMessage.
