@@ -38,7 +38,11 @@ func (c *Config) Validate() error {
 	}
 
 	if _, err := strconv.Atoi(strings.Split(c.NodeApiURL, ":")[1]); err != nil {
-		return errors.New(fmt.Sprintf("error parsing node api url %s", err))
+		return fmt.Errorf("error parsing node api url %s", err)
+	}
+
+	if _, err := strconv.Atoi(strings.Split(c.NsqLookupdURL, ":")[1]); err != nil {
+		return fmt.Errorf("error parsing nsqd url %s", err)
 	}
 
 	return c.Storage.Validate()

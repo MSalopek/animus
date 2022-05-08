@@ -11,11 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/msalopek/animus/engine/repo"
 	"github.com/msalopek/animus/model"
+	"github.com/msalopek/animus/queue"
 	"github.com/msalopek/animus/storage"
 )
 
-// UploadFile extracts a file from gin.Context (multipart form)
-// and synchronously uploads it to default storage bucket.
+// UploadFile extracts a file from gin.Context (multipart form),
+// uploads it to default storage bucket and publishes a PinRequest message.
 func (api *AnimusAPI) UploadFile(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 
@@ -52,11 +53,16 @@ func (api *AnimusAPI) UploadFile(c *gin.Context) {
 		return
 	}
 
+	if err := api.publishPinRequest(storage); err != nil {
+		abortWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	c.JSON(http.StatusCreated, storage)
 }
 
-// UploadDir extracts a files from gin.Context (multipart form)
-// and synchronously uploads them it to default storage bucket.
+// UploadDir extracts a files from gin.Context (multipart form),
+// uploads them it to default storage bucket and publishes a PinRequest message.
 func (api *AnimusAPI) UploadDir(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 
@@ -111,6 +117,11 @@ func (api *AnimusAPI) UploadDir(c *gin.Context) {
 		return
 	}
 
+	if err := api.publishPinRequest(storage); err != nil {
+		abortWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	c.JSON(http.StatusCreated, storage)
 }
 
@@ -142,4 +153,22 @@ func (api *AnimusAPI) uploadFile(file *multipart.FileHeader, objName string) (*s
 	// TODO: add deadline
 	ctx := context.Background()
 	return api.storage.StreamFile(ctx, api.cfg.Bucket, objName, src, file.Size, storage.Opts{})
+}
+
+func (api *AnimusAPI) publishPinRequest(m *model.Storage) error {
+	pr := queue.PinRequest{
+		StorageID: int(m.ID),
+		Key:       *m.StorageKey,
+		Dir:       m.Dir,
+	}
+	body, err := json.Marshal(pr)
+	if err != nil {
+		return err
+	}
+
+	err = api.publisher.Publish(api.cfg.NsqTopic, body)
+	if err != nil {
+		return err
+	}
+	return nil
 }

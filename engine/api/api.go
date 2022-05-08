@@ -10,14 +10,11 @@ import (
 	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/api/auth"
 	"github.com/msalopek/animus/engine/repo"
+	"github.com/msalopek/animus/queue"
 	"github.com/msalopek/animus/storage"
 	log "github.com/sirupsen/logrus"
 )
 
-type Publisher interface {
-	Publish(topic string, body []byte) error
-	Stop()
-}
 type AnimusAPI struct {
 	engine    *gin.Engine
 	server    *http.Server
@@ -25,7 +22,7 @@ type AnimusAPI struct {
 	repo      *repo.Repo
 	auth      *auth.Auth
 	logger    *log.Logger
-	publisher Publisher
+	publisher queue.Publisher
 
 	done chan struct{}
 
@@ -55,9 +52,10 @@ func New(cfg *engine.Config, repo *repo.Repo, logger *log.Logger, done chan stru
 			Authority:       cfg.AuthAuthority,
 			ExpirationHours: time.Duration(cfg.AuthExpirationHours) * time.Hour,
 		},
-		storage: storage.MustNewManager(cfg.Storage),
-		done:    done,
-		logger:  logger,
+		storage:   storage.MustNewManager(cfg.Storage),
+		publisher: queue.MustNewPublisher(cfg.NsqTopic, cfg.NsqdURL),
+		done:      done,
+		logger:    logger,
 	}
 
 	engine.Use(requestLogger(logger))
@@ -99,7 +97,7 @@ func (api *AnimusAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (api *AnimusAPI) Start() error {
 	api.registerHandlers()
-	api.logger.Info("starting wallet service")
+	api.logger.Info("starting animusd service")
 	err := api.server.ListenAndServe()
 	if err == http.ErrServerClosed {
 		// wait for the graceful shutdown
@@ -119,10 +117,11 @@ func (api *AnimusAPI) Stop() error {
 	defer cancel()
 	defer close(api.done)
 
+	api.publisher.Stop()
+
 	// graceful shutdown (serve all in flight)
 	// Error from closing listeners, or context timeout:
 	err := api.server.Shutdown(ctx)
-
 	if err != nil {
 		api.logger.WithFields(log.Fields{
 			"error": err.Error(),

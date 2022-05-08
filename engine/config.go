@@ -11,18 +11,21 @@ import (
 )
 
 type Config struct {
-	AuthSecret          string `json:"auth_secret,omitempty" yaml:"auth_secret"`
-	AuthAuthority       string `json:"auth_authority,omitempty" yaml:"auth_authority"`
-	AuthExpirationHours int    `json:"auth_expiration_hours,omitempty" yaml:"auth_expiration_hours"`
-	HttpPort            string `json:"http_port,omitempty" yaml:"http_port"`
-	DbDSN               string `json:"db_dsn,omitempty" yaml:"db_dsn"`
-	DbURI               string `json:"db_uri,omitempty" yaml:"db_uri,omitempty"`
-	Debug               bool   `json:"debug,omitempty" yaml:"debug,omitempty"`
-	TextLogs            bool   `json:"text_logs,omitempty" yaml:"text_logs,omitempty"`
-	LogFile             string `json:"log_file,omitempty" yaml:"log_file,omitempty"`
+	AuthSecret          string `json:"auth_secret" yaml:"auth_secret"`
+	AuthAuthority       string `json:"auth_authority" yaml:"auth_authority"`
+	AuthExpirationHours int    `json:"auth_expiration_hours" yaml:"auth_expiration_hours"`
+	HttpPort            string `json:"http_port" yaml:"http_port"`
+	DbDSN               string `json:"db_dsn" yaml:"db_dsn"`
+	DbURI               string `json:"db_uri" yaml:"db_uri"`
+	Debug               bool   `json:"debug" yaml:"debug"`
+	TextLogs            bool   `json:"text_logs" yaml:"text_logs"`
+	LogFile             string `json:"log_file" yaml:"log_file"`
 
-	Bucket  string         `json:"bucket,omitempty" yaml:"bucket"`
-	Storage storage.Config `json:"storage,omitempty" yaml:"storage"`
+	NsqdURL  string `json:"nsqd_url" yaml:"nsqd_url"`
+	NsqTopic string `json:"nsq_topic" yaml:"nsq_topic"`
+
+	Bucket  string         `json:"bucket" yaml:"bucket"`
+	Storage storage.Config `json:"storage" yaml:"storage"`
 }
 
 // Validate validates config.
@@ -48,7 +51,11 @@ func (c *Config) Validate() error {
 	}
 
 	if _, err := strconv.Atoi(strings.Split(c.HttpPort, ":")[1]); err != nil {
-		return errors.New(fmt.Sprintf("error parsing http port %s", err))
+		return fmt.Errorf("error parsing http port %s", err)
+	}
+
+	if _, err := strconv.Atoi(strings.Split(c.NsqdURL, ":")[1]); err != nil {
+		return fmt.Errorf("error parsing nsqd url %s", err)
 	}
 
 	return c.Storage.Validate()
