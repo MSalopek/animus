@@ -10,25 +10,24 @@ import (
 )
 
 type Config struct {
-	NodeApiURL string `json:"node_api_url,omitempty" yaml:"node_api_url"`
-	LocalShell bool   `json:"local_shell,omitempty" yaml:"local_shell,omitempty"`
+	NodeApiURL string `json:"node_api_url" yaml:"node_api_url"`
+	LocalShell bool   `json:"local_shell" yaml:"local_shell"`
 
-	DbDSN string `json:"db_dsn,omitempty" yaml:"db_dsn,omitempty"`
-	DbURI string `json:"db_uri,omitempty" yaml:"db_uri,omitempty"`
+	DbDSN string `json:"db_dsn" yaml:"db_dsn"`
+	DbURI string `json:"db_uri" yaml:"db_uri"`
 
-	Debug    bool   `json:"debug,omitempty" yaml:"debug,omitempty"`
-	TextLogs bool   `json:"text_logs,omitempty" yaml:"text_logs,omitempty"`
-	LogFile  string `json:"log_file,omitempty" yaml:"log_file,omitempty"`
+	Debug    bool   `json:"debug" yaml:"debug"`
+	TextLogs bool   `json:"text_logs" yaml:"text_logs"`
+	LogFile  string `json:"log_file" yaml:"log_file"`
 
-	Storage storage.Config `json:"storage,omitempty" yaml:"storage"`
-	Bucket  string         `json:"bucket,omitempty" yaml:"bucket"`
+	Storage storage.Config `json:"storage" yaml:"storage"`
+	Bucket  string         `json:"bucket" yaml:"bucket"`
 
-	NsqLookupdURL  string   `json:"nsq_lookupd_url,omitempty" yaml:"nsq_lookupd_url"`
-	PublishTopics  []string `json:"publish_topic,omitempty" yaml:"publish_topic"`
-	SubscribeTopic string   `json:"subscribe_topic,omitempty" yaml:"subscribe_topic"`
+	NsqLookupdURL  string   `json:"nsq_lookupd_url" yaml:"nsq_lookupd_url"`
+	PublishTopics  []string `json:"publish_topic" yaml:"publish_topic"`
+	SubscribeTopic string   `json:"subscribe_topic" yaml:"subscribe_topic"`
 
-	// defines buffer size for request chan
-	QueueSize int `json:"queue_depth" yaml:"queue_depth"`
+	MaxConcurrentRequests int `json:"max_concurrent_requests" yaml:"max_concurrent_requests"`
 }
 
 // Validate validates config.
