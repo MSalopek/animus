@@ -11,7 +11,6 @@ import (
 
 	"github.com/msalopek/animus/engine/repo"
 	"github.com/msalopek/animus/pinner"
-	"github.com/msalopek/animus/queue"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -40,17 +39,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// if cfg.Debug {
-	// 	buf, _ := yaml.Marshal(cfg)
-	// 	log.Info(fmt.Sprintf("-- config --\n%s-- ------ --", string(buf)))
-	// }
 	var wg sync.WaitGroup
 	ctx := exitSignal()
+
 	logger := log.New()
 	logger.Out = os.Stdout
 	logger.SetFormatter(&log.JSONFormatter{TimestampFormat: "2006-01-02 15:04:05"})
 	if cfg.TextLogs {
 		logger.SetFormatter(&log.TextFormatter{TimestampFormat: "2006-01-02 15:04:05", FullTimestamp: true})
+	}
+
+	if cfg.Debug {
+		logger.SetLevel(log.DebugLevel)
+		// buf, _ := yaml.Marshal(cfg)
+		// logger.Debug(fmt.Sprintf("-- config --\n%s-- ------ --", string(buf)))
 	}
 
 	var db *gorm.DB
@@ -69,7 +71,8 @@ func main() {
 
 	pinner := pinner.New(&cfg, repo, logger)
 	wg.Add(1)
-	go queue.WgChanBodyLogger(&wg, pinner.Messages)
+	// go queue.WgChanBodyLogger(&wg, pinner.Messages)
+	go pinner.HandlePinRequests(&wg)
 
 	<-ctx.Done()
 	logger.Info("pinner stopping")

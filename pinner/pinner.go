@@ -41,13 +41,15 @@ type Pinner struct {
 
 func New(conf *Config, repo *repo.Repo, logger *log.Logger) *Pinner {
 	p := &Pinner{
-		conf:      conf,
-		logger:    logger,
-		sm:        storage.MustNewManager(conf.Storage),
-		sh:        shell.NewShell(conf.NodeApiURL),
-		rateLimit: make(chan struct{}, defaultMaxConcurrentRequests),
-
 		Messages: make(chan []byte),
+
+		repo: repo,
+		sm:   storage.MustNewManager(conf.Storage),
+		sh:   shell.NewShell(conf.NodeApiURL),
+
+		rateLimit: make(chan struct{}, defaultMaxConcurrentRequests),
+		logger:    logger,
+		conf:      conf,
 	}
 	if conf.MaxConcurrentRequests < 1 {
 		p.rateLimit = make(chan struct{}, defaultMaxConcurrentRequests)
@@ -72,59 +74,80 @@ func New(conf *Config, repo *repo.Repo, logger *log.Logger) *Pinner {
 func (p *Pinner) Stop() {
 	p.subscriber.Unsubscribe()
 	close(p.Messages)
+	close(p.rateLimit)
 }
 
 func (p *Pinner) SetAutopin(val bool) {
 	p.autoPin = val
 }
 
-// read messages from Messages chan and process pin requests.
+// Read and process PinRequests from Messages chan.
 // All in-flight requests will be processed before terminating.
-func (p *Pinner) handlePinRequests(wg *sync.WaitGroup) {
+func (p *Pinner) HandlePinRequests(wg *sync.WaitGroup) {
+	defer wg.Done()
 	for m := range p.Messages {
-		// primitive rate limiting
-		p.rateLimit <- struct{}{}
-
 		if m == nil {
-			log.WithFields(log.Fields{"func": "handlePinRequests"}).Error("got nil message")
+			p.logger.WithFields(log.Fields{"func": "HandlePinRequests"}).Warn("got nil message")
 			break
 		}
+
+		// primitive rate limiting
+		p.rateLimit <- struct{}{}
+		p.logger.WithFields(log.Fields{"func": "HandlePinRequests"}).Debug("NEW MESSAGE")
+
 		req := &queue.PinRequest{}
 		if err := req.Unmarshal(m); err != nil {
-			log.WithFields(log.Fields{"func": "handlePinRequests"}).Error(err)
+			p.logger.WithFields(log.Fields{"func": "HandlePinRequests"}).Error(err)
 			continue
 		}
 		wg.Add(1)
 		go p.handleAdd(wg, req)
 	}
-	log.WithFields(log.Fields{"func": "handlePinRequests"}).Error("terminating")
+	p.logger.WithFields(log.Fields{"func": "HandlePinRequests"}).Debug("terminating")
 }
 
 func (p *Pinner) handleAdd(wg *sync.WaitGroup, req *queue.PinRequest) {
 	defer wg.Done()
+	defer func() {
+		<-p.rateLimit // primitive rate limiting
+	}()
+
 	hash, err := p.Add(req)
 	if err != nil {
-		log.WithFields(
+		p.logger.WithFields(
 			log.Fields{
+				"message": "failed to add",
 				"request": fmt.Sprintf("%#v", req),
 			}).Error(err)
 		return
 	}
+	p.logger.WithFields(
+		log.Fields{
+			"hash":    hash,
+			"request": fmt.Sprintf("%#v", req),
+		}).Debug("added pin request")
+
 	stage := model.UploadStageIPFS
 	s := &model.Storage{
+		ID:          int64(req.StorageID),
 		StorageKey:  &hash,
 		UploadStage: &stage,
 		UpdatedAt:   time.Now(),
 	}
 	// check errors
-	p.repo.Save(s)
-	log.WithFields(
+	if res := p.repo.Model(s).Updates(*s); res.Error != nil {
+		p.logger.WithFields(
+			log.Fields{
+				"message": "failed to save",
+				"request": fmt.Sprintf("%#v", req),
+			}).Error(err)
+		return
+	}
+	p.logger.WithFields(
 		log.Fields{
 			"hash":    hash,
 			"request": fmt.Sprintf("%#v", req),
-		}).Info("uploaded pin request")
-	// primitive rate limiting
-	<-p.rateLimit
+		}).Info("processed pin request")
 }
 
 // Add uploads and pins file or directory under pr.Key to IPFS using StorageMessage.
@@ -141,7 +164,7 @@ func (p *Pinner) Add(pr *queue.PinRequest) (string, error) {
 		if err != nil {
 			return hash, err
 		}
-		log.WithFields(log.Fields{
+		p.logger.WithFields(log.Fields{
 			"temp":    tmp,
 			"request": fmt.Sprintf("%#v", pr),
 		}).Debug("created temp dir")
@@ -151,12 +174,12 @@ func (p *Pinner) Add(pr *queue.PinRequest) (string, error) {
 			return hash, err
 		}
 
-		log.WithFields(log.Fields{
+		p.logger.WithFields(log.Fields{
 			"temp": tmp,
 		}).Debug("removing temp dir")
 		err = os.RemoveAll(tmp)
 		if err != nil {
-			log.WithFields(log.Fields{
+			p.logger.WithFields(log.Fields{
 				"temp":    tmp,
 				"message": "error removing temp dir",
 			}).Error(err)
@@ -165,7 +188,7 @@ func (p *Pinner) Add(pr *queue.PinRequest) (string, error) {
 	}
 	obj, err := p.sm.GetObject(ctx, p.conf.Bucket, pr.Key, minio.GetObjectOptions{})
 	if err != nil {
-		log.WithFields(log.Fields{
+		p.logger.WithFields(log.Fields{
 			"request": fmt.Sprintf("%#v", pr),
 			"message": "error streaming object",
 		}).Error(err)
