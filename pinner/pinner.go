@@ -130,7 +130,7 @@ func (p *Pinner) handleAdd(wg *sync.WaitGroup, req *queue.PinRequest) {
 	stage := model.UploadStageIPFS
 	s := &model.Storage{
 		ID:          int64(req.StorageID),
-		StorageKey:  &hash,
+		Cid:         &hash,
 		UploadStage: &stage,
 		UpdatedAt:   time.Now(),
 	}
