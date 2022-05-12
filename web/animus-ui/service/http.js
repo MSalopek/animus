@@ -3,14 +3,18 @@ import { format } from 'prettier';
 // import { ApiError } from "next/dist/server/api-utils";
 import { getToken, setToken } from './util';
 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const API = axios.create({
-  baseURL: process.env.API_URL,
+  baseURL: API_URL,
   headers: { 'Content-type': 'application/json' },
 });
 
+
 API.interceptors.request.use(
   (request) => {
-    const token = getToken;
+    const token = getToken();
     const auth = token ? `Bearer ${token}` : '';
     request.headers.common['Authorization'] = auth;
     return request;
@@ -23,7 +27,7 @@ API.interceptors.request.use(
 export async function GetUserStorage(params) {
   const res = await API({
     method: 'get',
-    url: `${API.baseURL}/auth/storage/user`,
+    url: `${API_URL}/auth/storage/user`,
     params: params,
   });
   return res.data;
@@ -34,7 +38,7 @@ export async function UploadFile(file) {
   formData.append('file', file, file.name);
   return API({
     method: 'post',
-    url: `${API.baseURL}/auth/storage/add-file`,
+    url:`${API_URL}/auth/storage/add-file`,
     headers: {
       'Content-Type': 'multipart/form-data',
     },

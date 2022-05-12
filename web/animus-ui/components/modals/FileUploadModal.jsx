@@ -71,7 +71,8 @@ function UploadFileBox({ setIsOpen }) {
         setErrMessage(`Error sending request. ${error.message}`)
       } else {
         // Something happened in setting up the request that triggered an Error
-        setErrMessage('Aborted! Error preparing request.');
+        setErrMessage('Aborted! Error preparing request.', error, "JE<bOTE");
+        console.log(error)
       }
     });
     }

@@ -1,5 +1,9 @@
 export function getToken(){
-	return JSON.parse(localStorage.getItem('user')).token || ''	
+	const u = JSON.parse(localStorage.getItem('user'))
+	if (u) {
+		return u.token;
+	}
+	return "";
 }
 
 export function setToken(token) {
