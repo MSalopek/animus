@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/api/auth"
 	"github.com/msalopek/animus/engine/repo"
@@ -38,6 +39,8 @@ func New(cfg *engine.Config, repo *repo.Repo, logger *log.Logger, done chan stru
 	}
 
 	engine := gin.New()
+	// CORS defined on all routes
+	engine.Use(handleCORS(cfg.CORSOrigins))
 	s := &AnimusAPI{
 		cfg: cfg,
 
@@ -64,9 +67,8 @@ func New(cfg *engine.Config, repo *repo.Repo, logger *log.Logger, done chan stru
 
 func (api *AnimusAPI) registerHandlers() {
 	root := api.engine.Group("/api")
-
 	root.GET("/ping", api.Ping)
-	root.POST("/login/", api.Login)
+	root.POST("/login", api.Login)
 	root.POST("/register", api.Register)
 
 	auth := root.Group("/auth").Use(

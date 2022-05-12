@@ -3,7 +3,9 @@ package api
 import (
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/api/auth"
@@ -11,6 +13,34 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
+
+func handleCORS(allowedOrigins []string) gin.HandlerFunc {
+	if len(allowedOrigins) == 0 {
+		panic("missing allowed origins")
+	}
+	return cors.New(cors.Config{
+		AllowOrigins: allowedOrigins,
+		AllowMethods: []string{
+			"GET",
+			"PUT",
+			"POST",
+			"DELETE",
+			"OPTIONS",
+		},
+		AllowHeaders: []string{
+			"Authorization",
+			"Cache-Control",
+			"Content-Type",
+			"Accept-Encoding",
+			"X-CSRF-Token",
+			"X-Requested-With",
+			"Origin",
+		},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	})
+}
 
 func requestLogger(logger *logrus.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {

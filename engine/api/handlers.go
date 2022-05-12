@@ -57,7 +57,6 @@ func (api *AnimusAPI) UploadFile(c *gin.Context) {
 		abortWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-
 	c.JSON(http.StatusCreated, storage)
 }
 

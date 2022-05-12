@@ -11,21 +11,22 @@ import (
 )
 
 type Config struct {
-	AuthSecret          string `json:"auth_secret" yaml:"auth_secret"`
-	AuthAuthority       string `json:"auth_authority" yaml:"auth_authority"`
-	AuthExpirationHours int    `json:"auth_expiration_hours" yaml:"auth_expiration_hours"`
-	HttpPort            string `json:"http_port" yaml:"http_port"`
-	DbDSN               string `json:"db_dsn" yaml:"db_dsn"`
-	DbURI               string `json:"db_uri" yaml:"db_uri"`
-	Debug               bool   `json:"debug" yaml:"debug"`
-	TextLogs            bool   `json:"text_logs" yaml:"text_logs"`
-	LogFile             string `json:"log_file" yaml:"log_file"`
+	AuthSecret          string   `json:"auth_secret,omitempty" yaml:"auth_secret"`
+	AuthAuthority       string   `json:"auth_authority,omitempty" yaml:"auth_authority"`
+	AuthExpirationHours int      `json:"auth_expiration_hours,omitempty" yaml:"auth_expiration_hours"`
+	HttpPort            string   `json:"http_port,omitempty" yaml:"http_port"`
+	CORSOrigins         []string `json:"cors_origins" yaml:"cors_origins"`
+	DbDSN               string   `json:"db_dsn,omitempty" yaml:"db_dsn"`
+	DbURI               string   `json:"db_uri,omitempty" yaml:"db_uri"`
+	Debug               bool     `json:"debug,omitempty" yaml:"debug"`
+	TextLogs            bool     `json:"text_logs,omitempty" yaml:"text_logs"`
+	LogFile             string   `json:"log_file,omitempty" yaml:"log_file"`
 
-	NsqdURL  string `json:"nsqd_url" yaml:"nsqd_url"`
-	NsqTopic string `json:"nsq_topic" yaml:"nsq_topic"`
+	NsqdURL  string `json:"nsqd_url,omitempty" yaml:"nsqd_url"`
+	NsqTopic string `json:"nsq_topic,omitempty" yaml:"nsq_topic"`
 
-	Bucket  string         `json:"bucket" yaml:"bucket"`
-	Storage storage.Config `json:"storage" yaml:"storage"`
+	Bucket  string         `json:"bucket,omitempty" yaml:"bucket"`
+	Storage storage.Config `json:"storage,omitempty" yaml:"storage"`
 }
 
 // Validate validates config.
@@ -40,6 +41,10 @@ func (c *Config) Validate() error {
 
 	if len(c.AuthAuthority) < 1 {
 		return errors.New("signing authority must be specified")
+	}
+
+	if len(c.CORSOrigins) < 1 {
+		return errors.New("CORS allowed origins must be specified")
 	}
 
 	if len(c.DbDSN) == 0 && len(c.DbURI) == 0 {

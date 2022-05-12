@@ -1,6 +1,9 @@
 auth_secret: "animus_password_SECRET_VERY_Gewd"
 auth_authority: "AnimusEngine"
 auth_expiration_hours: 1
+cors_origins:
+    - "http://localhost:3000"
+
 http_port: "localhost:8083"
 db_dsn: "host=localhost user=animus password=animus dbname=animus port=5432 sslmode=disable"
 db_uri: "postgres://animus:animus@localhost:5432/animus"
