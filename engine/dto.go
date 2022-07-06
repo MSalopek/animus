@@ -1,4 +1,4 @@
-package api
+package engine
 
 import (
 	"database/sql"
@@ -20,6 +20,6 @@ type CreateKeyResponse struct {
 }
 
 type UpdateKeyRequest struct {
-	Rights   string `json:"rights"`
-	Disabled bool   `json:"disabled"`
+	Rights   *string `json:"rights,omitempty"`
+	Disabled *bool   `json:"disabled,omitempty"`
 }

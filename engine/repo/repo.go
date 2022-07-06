@@ -3,6 +3,7 @@ package repo
 import (
 	"time"
 
+	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -95,15 +96,31 @@ func (rpo *Repo) GetUserApiKeys(ctx QueryCtx, userID int) ([]*model.Key, error) 
 }
 
 func (rpo *Repo) DeleteUserApiKey(userID int, keyID int) error {
-	res := rpo.Table("keys").Where("id = ? AND user_id = ?", keyID, userID).
+	res := rpo.Table("keys").
+		Where("id = ? AND user_id = ?", keyID, userID).
 		Update("deleted_at", time.Now())
 
 	return res.Error
 }
 
-func (rpo *Repo) UpdateUserApiKey(userID int, keyID int, upd *model.Key) error {
-	res := rpo.Table("keys").Where("id = ? AND user_id = ?", keyID, userID).
-		Updates(*upd)
+func (rpo *Repo) UpdateUserApiKey(userID int, keyID int, update *engine.UpdateKeyRequest) (*model.Key, error) {
+	var key model.Key
+	res := rpo.Table("keys").Where("id = ? AND user_id = ?", keyID, userID).First(&key)
+	if res.Error != nil {
+		return nil, res.Error
+	}
 
-	return res.Error
+	if update.Rights != nil {
+		key.Rights = *update.Rights
+	}
+
+	if update.Disabled != nil {
+		key.Disabled = *update.Disabled
+	}
+
+	res = rpo.Save(&key)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &key, nil
 }

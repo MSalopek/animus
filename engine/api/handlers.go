@@ -172,7 +172,7 @@ func (api *AnimusAPI) CreateUserKey(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, CreateKeyResponse{
+	c.JSON(http.StatusCreated, engine.CreateKeyResponse{
 		ID:        key.ID,
 		UserID:    key.UserID,
 		ClientKey: key.ClientKey,
@@ -202,24 +202,20 @@ func (api *AnimusAPI) UpdateUserKey(c *gin.Context) {
 		return
 	}
 
-	var req UpdateKeyRequest
+	var req engine.UpdateKeyRequest
 	if err := c.BindJSON(&req); err != nil {
 		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidRequestBody)
 		return
 	}
 
-	err = api.repo.UpdateUserApiKey(uid, int(keyId), &model.Key{
-		Rights:   req.Rights,
-		Disabled: req.Disabled,
-	})
+	updated, err := api.repo.UpdateUserApiKey(uid, int(keyId), &req)
 	if err != nil {
 		// TODO: don't leak DB errors
 		abortWithError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// c.JSON(http.StatusOK, struct{}{})
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, updated)
 
 }
 
