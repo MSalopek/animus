@@ -11,8 +11,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 	CHECK (VALUE~'^[a-z0-9\-]{1,32}$');
 
 CREATE TYPE upload_stage AS ENUM (
-	'storage',
-	'ipfs'
+	'storage', 'ipfs'
+);
+
+CREATE TYPE key_access_rights AS ENUM (
+	'r',
+	'rw',
+	'rwd'
 );
 
 CREATE TABLE users (
@@ -27,15 +32,13 @@ CREATE TABLE users (
 	deleted_at TIMESTAMP,
 
 	CONSTRAINT users_email_uniq UNIQUE (email),
-	
-	CONSTRAINT users_email_valid
-		CHECK (email~'^[^@]+@[^@]+$'),
-	CONSTRAINT users_updated_at
-		CHECK (updated_at>=created_at),
-	CONSTRAINT users_deleted_at
-		CHECK (deleted_at IS NULL OR deleted_at>=created_at),
-	CONSTRAINT users_pass_has
-		CHECK (length(password) IN (59, 60))
+	CONSTRAINT users_email_valid CHECK (email ~ '^[^@]+@[^@]+$'),
+	CONSTRAINT users_updated_at CHECK (updated_at >= created_at),
+	CONSTRAINT users_deleted_at CHECK (
+		deleted_at IS NULL
+		OR deleted_at >= created_at
+	),
+	CONSTRAINT users_pass_hash CHECK (LENGTH(password) IN (59, 60))
 );
 
 CREATE TABLE storage (
@@ -50,19 +53,16 @@ CREATE TABLE storage (
 	hash VARCHAR(1024),
 	upload_stage UPLOAD_STAGE,
 	pinned BOOLEAN NOT NULL DEFAULT false,
-	-- JSON data referencing any previous file versions
-	-- check the versions column to fetch any previous versions if they stil exist
-	-- TODO: create better versioning strategies
-	versions JSONB DEFAULT '{}'::JSONB,
 	metadata JSONB DEFAULT '{}'::JSONB,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
 
-	CONSTRAINT storage_updated_at
-		CHECK (updated_at>=created_at),
-	CONSTRAINT storage_deleted_at
-		CHECK (deleted_at IS NULL OR deleted_at>=created_at)
+	CONSTRAINT storage_updated_at CHECK (updated_at >= created_at),
+	CONSTRAINT storage_deleted_at CHECK (
+		deleted_at IS NULL
+		OR deleted_at >= created_at
+	)
 );
 
 CREATE INDEX storage_dirs_idx ON storage(dir);
@@ -75,31 +75,76 @@ CREATE TABLE gateways (
 	slug VARCHAR(32) NOT NULL,
 	public_id uuid DEFAULT uuid_generate_v4() NOT NULL,
 
-	CONSTRAINT gateways_slug_valid
-		CHECK (slug~'^[a-z0-9\-]{1,32}$')
+	CONSTRAINT gateways_slug_valid CHECK (slug ~ '^[a-z0-9\-]{1,32}$')
 );
 
 CREATE TABLE subscriptions (
 	id BIGSERIAL PRIMARY KEY,
-	user_id BIGINT REFERENCES users(id),
-	promotion BOOLEAN NOT NULL DEFAULT false, -- if true it's free
-	created_at TIMESTAMP NOT NULL DEFAULT now(),
-	updated_at TIMESTAMP NOT NULL DEFAULT now(),
+	public_id uuid DEFAULT uuid_generate_v4() NOT NULL,
+	name VARCHAR(64) NOT NULL,
+	promotion BOOLEAN NOT NULL DEFAULT FALSE,
+	-- if true it's free
 	price NUMERIC NOT NULL DEFAULT 0,
 	currency VARCHAR(3) NOT NULL DEFAULT 'EUR',
+	created_at TIMESTAMP NOT NULL DEFAULT now(),
+	deleted_at TIMESTAMP,
 	valid_from TIMESTAMP NOT NULL,
 	valid_to TIMESTAMP NOT NULL,
-	config JSONB DEFAULT '{}'::JSONB,
+	config JSONB DEFAULT '{}' :: JSONB,
 
-	CONSTRAINT subscriptions_updated_at
-		CHECK (updated_at>=created_at),
-	CONSTRAINT subscriptions_valid_to_valid_from
-		CHECK (valid_to>=valid_from)
+	CONSTRAINT subscriptions_valid_to_valid_from CHECK (valid_to >= valid_from),
+	CONSTRAINT subscriptions_created_at_valid_from CHECK (created_at <= valid_from),
+	CONSTRAINT subscriptions_created_at_deleted_at CHECK (
+		deleted_at IS NULL
+		OR deleted_at >= created_at
+	)
+);
+
+CREATE TABLE user_subscriptions (
+	id BIGSERIAL PRIMARY KEY,
+	user_id BIGINT REFERENCES users(id),
+	public_id uuid DEFAULT uuid_generate_v4() NOT NULL,
+	subscription_id BIGINT REFERENCES subscriptions(id),
+	created_at TIMESTAMP NOT NULL DEFAULT now(),
+	deleted_at TIMESTAMP,
+	valid_from TIMESTAMP NOT NULL,
+	valid_to TIMESTAMP NOT NULL,
+
+	CONSTRAINT user_subscriptions_valid_to_valid_from CHECK (valid_to >= valid_from),
+	CONSTRAINT user_subscriptions_created_at_valid_from CHECK (created_at <= valid_from),
+	CONSTRAINT user_subscriptions_created_at_deleted_at CHECK (
+		deleted_at IS NULL
+		OR deleted_at >= created_at
+	)
+);
+
+-- keys can be assigned assigned as read, read-write or read-write-delete
+CREATE TABLE keys (
+	id BIGSERIAL PRIMARY KEY,
+	user_id BIGINT REFERENCES users(id),
+	client_key VARCHAR(32) NOT NULL,
+	client_secret VARCHAR(60) NOT NULL,
+	rights KEY_ACCESS_RIGHTS NOT NULL DEFAULT 'r',
+	disabled BOOLEAN NOT NULL DEFAULT FALSE,
+	created_at TIMESTAMP NOT NULL DEFAULT now(),
+	deleted_at TIMESTAMP,
+	valid_from TIMESTAMP NOT NULL,
+	valid_to TIMESTAMP NOT NULL,
+
+	CONSTRAINT keys_valid_to_valid_from CHECK (valid_to >= valid_from),
+	CONSTRAINT keys_created_at_valid_from CHECK (created_at <= valid_from),
+	CONSTRAINT keys_created_at_deleted_at CHECK (
+		deleted_at IS NULL
+		OR deleted_at >= created_at
+	)
 );
 
 -- +goose Down
+DROP TABLE keys;
+DROP TABLE user_subscriptions;
+DROP TABLE subscriptions;
 DROP TABLE gateways;
 DROP TABLE storage;
-DROP TABLE subscriptions;
 DROP TABLE users;
 DROP TYPE upload_stage;
+DROP TYPE key_access_rights;
