@@ -72,13 +72,28 @@ func (api *AnimusAPI) registerHandlers() {
 	root.POST("/register", api.Register)
 
 	auth := root.Group("/auth").Use(
-		authorizeRequest(api.auth),
+		authorizeUserRequest(api.auth),
 		authorizeUser(api.repo),
 	)
 	auth.GET("/whoami", api.WhoAmI)
+
+	auth.GET("/user/keys", api.GetUserKeys)
+	auth.POST("/user/keys", api.CreateUserKey)
+	auth.PATCH("/user/keys/id/:id", api.GetUserUploads)
+	auth.DELETE("/user/keys/id/:id", api.GetUserUploads)
+
+	auth.GET("/user/storage", api.GetUserUploads)
 	auth.POST("/storage/add-file", api.UploadFile)
 	auth.POST("/storage/add-dir", api.UploadDir)
-	auth.GET("/storage/user", api.GetUserUploads)
+
+	// /gate group is for key-secret auth for API access
+	gate := root.Group("/gate").Use(
+		authorizeClientRequest(api.repo),
+	)
+	gate.GET("/whoami", api.WhoAmI)
+	gate.POST("/storage/add-file", api.UploadFile)
+	gate.POST("/storage/add-dir", api.UploadDir)
+	gate.GET("/storage/user", api.GetUserUploads)
 
 	// TODO:
 	// auth.POST("/storage/pin/:id", WIPresponder)

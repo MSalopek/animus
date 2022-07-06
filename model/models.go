@@ -14,6 +14,14 @@ const (
 	UploadStageStorage = "storage"
 )
 
+type ClientAccess string
+
+const (
+	ClientAccessRead            = "r"
+	ClientAccessReadWrite       = "rw"
+	ClientAccessReadWriteDelete = "rwd"
+)
+
 type User struct {
 	ID        int64      `json:"id" gorm:"primaryKey"`
 	Username  string     `json:"username"`
@@ -67,6 +75,7 @@ type Key struct {
 	Disabled     bool   `json:"disabled"`
 
 	CreatedAt time.Time    `json:"created_at"`
+	UpdatedAt time.Time    `json:"updated_at"`
 	DeletedAt sql.NullTime `json:"deleted_at"`
 	ValidFrom time.Time    `json:"valid_from"`
 	ValidTo   time.Time    `json:"valid_to"`
@@ -97,4 +106,11 @@ type UserSubscription struct {
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
 	ValidFrom time.Time `json:"valid_from"`
 	ValidTo   time.Time `json:"valid_to"`
+}
+
+type APIClient struct {
+	UserID       int64
+	Email        string
+	ClientKey    string
+	ClientSecret string
 }

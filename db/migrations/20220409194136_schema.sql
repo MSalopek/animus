@@ -122,17 +122,19 @@ CREATE TABLE user_subscriptions (
 CREATE TABLE keys (
 	id BIGSERIAL PRIMARY KEY,
 	user_id BIGINT REFERENCES users(id),
-	client_key VARCHAR(32) NOT NULL,
-	client_secret VARCHAR(60) NOT NULL,
+	client_key varchar(32) NOT NULL,
+	client_secret VARCHAR(32) NOT NULL,
 	rights KEY_ACCESS_RIGHTS NOT NULL DEFAULT 'r',
 	disabled BOOLEAN NOT NULL DEFAULT FALSE,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
+	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
 	valid_from TIMESTAMP NOT NULL,
 	valid_to TIMESTAMP NOT NULL,
 
 	CONSTRAINT keys_valid_to_valid_from CHECK (valid_to >= valid_from),
 	CONSTRAINT keys_created_at_valid_from CHECK (created_at <= valid_from),
+	CONSTRAINT keys_updated_at CHECK (updated_at >= created_at),
 	CONSTRAINT keys_created_at_deleted_at CHECK (
 		deleted_at IS NULL
 		OR deleted_at >= created_at

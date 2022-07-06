@@ -12,11 +12,14 @@ const (
 	ErrNoAuthHeader       = "Authorization header not provided"
 	ErrInvalidAuthToken   = "invalid Authorization token"
 
+	ErrInvalidClientAuth = "invalid client authorization"
+
 	ErrJWTExpired            = "JWT expired"
 	ErrJWTClaimUnprocessable = "unprocessable JWT"
 
-	ErrInvalidMeta       = "unprocessable meta field"
-	ErrUserNotFound      = "user not found"
-	ErrInvalidQueryParam = "invalid query param"
-	ErrNotADirectory     = "not a directory"
+	ErrInvalidMeta        = "unprocessable meta field"
+	ErrUserNotFound       = "user not found"
+	ErrInvalidQueryParam  = "invalid query param"
+	ErrInvalidRequestBody = "invalid request body"
+	ErrNotADirectory      = "not a directory"
 )
