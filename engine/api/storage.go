@@ -68,6 +68,7 @@ func (api *AnimusAPI) UploadDir(c *gin.Context) {
 	dirname := c.PostForm("name")
 	if dirname == "" {
 		abortWithError(c, http.StatusBadRequest, "missing directory name")
+		return
 	}
 
 	form, err := c.MultipartForm()

@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// PgTime represents time values as they are stored in postgres.
 type PgTime struct {
 	Infinity    bool
 	NegInfinity bool

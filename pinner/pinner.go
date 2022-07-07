@@ -19,7 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const defaultMaxConcurrentRequests = 10
+const defaultMaxConcurrentRequests = 50
 
 type Pinner struct {
 	sm *storage.Manager // s3 compatible storage
@@ -91,7 +91,7 @@ func (p *Pinner) HandlePinRequests(wg *sync.WaitGroup) {
 			break
 		}
 
-		// primitive rate limiting
+		// primitive throttling
 		p.rateLimit <- struct{}{}
 		p.logger.WithFields(log.Fields{"func": "HandlePinRequests"}).Debug("NEW MESSAGE")
 
@@ -109,7 +109,7 @@ func (p *Pinner) HandlePinRequests(wg *sync.WaitGroup) {
 func (p *Pinner) handleAdd(wg *sync.WaitGroup, req *queue.PinRequest) {
 	defer wg.Done()
 	defer func() {
-		<-p.rateLimit // primitive rate limiting
+		<-p.rateLimit // primitive throttling
 	}()
 
 	hash, err := p.Add(req)
