@@ -243,7 +243,7 @@ ALTER SEQUENCE public.goose_db_version_id_seq OWNED BY public.goose_db_version.i
 CREATE TABLE public.keys (
     id bigint NOT NULL,
     user_id bigint,
-    client_key character varying(32) NOT NULL,
+    client_key character varying(32) UNIQUE NOT NULL,
     client_secret character varying(64) NOT NULL,
     rights public.key_access_rights DEFAULT 'r'::public.key_access_rights NOT NULL,
     disabled boolean DEFAULT false NOT NULL,

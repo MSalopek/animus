@@ -36,13 +36,14 @@ func protectedHandler(c *gin.Context) {
 }
 
 func routerWithAuthMiddleware() *gin.Engine {
+	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	auth := &auth.Auth{
 		Secret:    testsecret,
 		Authority: testauthority,
 	}
 	// router uses auth middleware
-	router.Use(authorizeRequest(auth))
+	router.Use(authorizeUserRequest(auth))
 
 	return router
 }
@@ -57,7 +58,7 @@ func getValidTestToken() string {
 	return t
 }
 
-func TestAuthorizeRequestMissingAuthHeader(t *testing.T) {
+func TestauthorizeUserRequestMissingAuthHeader(t *testing.T) {
 	router := routerWithAuthMiddleware()
 	router.GET("/protected", protectedHandler)
 
@@ -68,7 +69,7 @@ func TestAuthorizeRequestMissingAuthHeader(t *testing.T) {
 	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
-func TestAuthzInvalidTokenFormat(t *testing.T) {
+func TestAuthInvalidTokenFormat(t *testing.T) {
 	router := routerWithAuthMiddleware()
 	router.GET("/protected", protectedHandler)
 
@@ -81,7 +82,7 @@ func TestAuthzInvalidTokenFormat(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestAuthorizeRequestInvalidToken(t *testing.T) {
+func TestauthorizeUserRequestInvalidToken(t *testing.T) {
 	router := routerWithAuthMiddleware()
 	router.GET("/protected", protectedHandler)
 

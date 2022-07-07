@@ -12,7 +12,8 @@ const (
 	ErrNoAuthHeader       = "Authorization header not provided"
 	ErrInvalidAuthToken   = "invalid Authorization token"
 
-	ErrInvalidClientAuth = "invalid client authorization"
+	ErrInvalidClientAuth      = "invalid client authorization"
+	ErrInvalidClientSignature = "invalid client signature"
 
 	ErrJWTExpired            = "JWT expired"
 	ErrJWTClaimUnprocessable = "unprocessable JWT"

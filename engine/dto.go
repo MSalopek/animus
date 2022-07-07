@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -13,10 +12,10 @@ type CreateKeyResponse struct {
 	Rights       string `json:"rights"`
 	Disabled     bool   `json:"disabled"`
 
-	CreatedAt time.Time    `json:"created_at"`
-	DeletedAt sql.NullTime `json:"deleted_at"`
-	ValidFrom time.Time    `json:"valid_from"`
-	ValidTo   time.Time    `json:"valid_to"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	ValidFrom time.Time  `json:"valid_from"`
 }
 
 type UpdateKeyRequest struct {

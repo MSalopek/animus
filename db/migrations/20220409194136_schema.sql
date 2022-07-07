@@ -109,7 +109,7 @@ CREATE TABLE subscriptions (
 	currency VARCHAR(3) NOT NULL DEFAULT 'EUR',
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
-	valid_from TIMESTAMP NOT NULL,
+	valid_from TIMESTAMP NOT NULL DEFAULT now(),
 	valid_to TIMESTAMP NOT NULL,
 	config JSONB DEFAULT '{}' :: JSONB,
 
@@ -132,7 +132,7 @@ CREATE TABLE user_subscriptions (
 	subscription_id BIGINT REFERENCES subscriptions(id),
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
-	valid_from TIMESTAMP NOT NULL,
+	valid_from TIMESTAMP NOT NULL DEFAULT now(),
 	valid_to TIMESTAMP NOT NULL,
 
 	CONSTRAINT user_subscriptions_valid_to_valid_from CHECK (valid_to >= valid_from),
@@ -151,14 +151,14 @@ CREATE TRIGGER user_subscriptions_soft_delete
 CREATE TABLE keys (
 	id BIGSERIAL PRIMARY KEY,
 	user_id BIGINT REFERENCES users(id),
-	client_key varchar(32) NOT NULL,
+	client_key varchar(32) UNIQUE NOT NULL,
 	client_secret VARCHAR(64) NOT NULL,
 	rights KEY_ACCESS_RIGHTS NOT NULL DEFAULT 'r',
 	disabled BOOLEAN NOT NULL DEFAULT FALSE,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
-	valid_from TIMESTAMP NOT NULL,
+	valid_from TIMESTAMP NOT NULL DEFAULT now(),
 	valid_to TIMESTAMP NOT NULL,
 
 	CONSTRAINT keys_valid_to_valid_from CHECK (valid_to >= valid_from),

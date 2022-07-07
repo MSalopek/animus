@@ -91,9 +91,9 @@ func (api *AnimusAPI) registerHandlers() {
 		authorizeClientRequest(api.repo),
 	)
 	gate.GET("/whoami", api.WhoAmI)
+	gate.GET("/storage", api.GetUserUploads)
 	gate.POST("/storage/add-file", api.UploadFile)
 	gate.POST("/storage/add-dir", api.UploadDir)
-	gate.GET("/storage/user", api.GetUserUploads)
 
 	// TODO:
 	// auth.POST("/storage/pin/:id", WIPresponder)
@@ -149,4 +149,10 @@ func (api *AnimusAPI) Stop() error {
 	// api.publisher.Stop()
 	api.logger.Info("graceful shutdown successful")
 	return nil
+}
+
+func (api *AnimusAPI) Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "OK",
+	})
 }

@@ -26,7 +26,7 @@ func (rpo *Repo) GetUserByEmail(email string) (*model.User, error) {
 
 func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]model.Storage, error) {
 	var s []model.Storage
-	q := rpo.Where("user_id = ?", userID).
+	q := rpo.Where("user_id = ? AND deleted_at IS NULL", userID).
 		Limit(ctx.Limit).
 		Offset(ctx.Offset)
 	if ctx.OrderBy != "" {
@@ -63,9 +63,9 @@ func (rpo *Repo) CreateStorage(s *model.Storage) error {
 func (rpo *Repo) GetApiClientByKey(key string) (*model.APIClient, error) {
 	var c model.APIClient
 	res := rpo.Table("users").
-		Select("users.id, users.email, keys.client_key, keys.client_secret").
-		Joins("JOIN keys ON keys.user_id = user.id").
-		Where("keys.client_key = ? AND key.deleted_at IS NULL", key).
+		Select("users.id AS user_id, users.email, keys.client_key, keys.client_secret").
+		Joins("JOIN keys ON keys.user_id = users.id").
+		Where("keys.client_key = ? AND keys.deleted_at IS NULL AND users.deleted_at IS NULL", key).
 		Scan(&c)
 
 	if res.Error != nil {
