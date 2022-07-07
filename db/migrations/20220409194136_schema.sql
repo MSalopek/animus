@@ -1,14 +1,26 @@
 -- +goose Up
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- CREATE DOMAIN bcrypt AS CHAR(60)
--- 	CHECK (length(VALUE) IN (59, 60));
+CREATE DOMAIN bcrypt AS CHAR(60)
+	CHECK (length(VALUE) IN (59, 60));
 
--- CREATE DOMAIN email AS TEXT
--- 	CHECK (VALUE~'^[^@]+@[^@]+$');
+CREATE DOMAIN email AS TEXT
+	CHECK (VALUE~'^[^@]+@[^@]+$');
 
--- CREATE DOMAIN domain_slug AS TEXT
--- 	CHECK (VALUE~'^[a-z0-9\-]{1,32}$');
+CREATE DOMAIN domain_slug AS TEXT
+	CHECK (VALUE~'^[a-z0-9\-]{1,32}$');
+
+-- +goose StatementBegin
+CREATE FUNCTION pg_soft_delete()
+	RETURNS trigger AS $$
+	DECLARE
+		command text := ' SET deleted_at = current_timestamp WHERE id = $1';
+	BEGIN
+		EXECUTE 'UPDATE ' || TG_TABLE_NAME || command USING OLD.id;
+		RETURN NULL;
+	END;
+$$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
 CREATE TYPE upload_stage AS ENUM (
 	'storage', 'ipfs'
@@ -20,13 +32,15 @@ CREATE TYPE key_access_rights AS ENUM (
 	'rwd'
 );
 
+
 CREATE TABLE users (
 	id BIGSERIAL PRIMARY KEY,
 	username VARCHAR(32) UNIQUE NOT NULL,
 	firstname VARCHAR(32),
 	lastname VARCHAR(32),
-	email VARCHAR(256) NOT NULL,
-	password VARCHAR(60) NOT NULL,
+	email EMAIL NOT NULL,
+	password BCRYPT NOT NULL,
+	max_keys INT NOT NULL default 5,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
@@ -40,6 +54,11 @@ CREATE TABLE users (
 	),
 	CONSTRAINT users_pass_hash CHECK (LENGTH(password) IN (59, 60))
 );
+
+CREATE TRIGGER users_soft_delete
+  BEFORE DELETE ON users
+  FOR EACH ROW EXECUTE PROCEDURE pg_soft_delete();
+
 
 CREATE TABLE storage (
 	id BIGSERIAL PRIMARY KEY,
@@ -65,6 +84,10 @@ CREATE TABLE storage (
 	)
 );
 
+CREATE TRIGGER storage_soft_delete
+  BEFORE DELETE ON storage
+  FOR EACH ROW EXECUTE PROCEDURE pg_soft_delete();
+
 CREATE INDEX storage_dirs_idx ON storage(dir);
 CREATE INDEX storage_user_cid_idx ON storage(user_id, cid);
 
@@ -73,9 +96,7 @@ CREATE TABLE gateways (
 	user_id BIGINT REFERENCES users(id),
 	name VARCHAR(64) NOT NULL,
 	slug VARCHAR(32) NOT NULL,
-	public_id uuid DEFAULT uuid_generate_v4() NOT NULL,
-
-	CONSTRAINT gateways_slug_valid CHECK (slug ~ '^[a-z0-9\-]{1,32}$')
+	public_id uuid DEFAULT uuid_generate_v4() NOT NULL
 );
 
 CREATE TABLE subscriptions (
@@ -100,6 +121,10 @@ CREATE TABLE subscriptions (
 	)
 );
 
+CREATE TRIGGER subscriptions_soft_delete
+  BEFORE DELETE ON subscriptions
+  FOR EACH ROW EXECUTE PROCEDURE pg_soft_delete();
+
 CREATE TABLE user_subscriptions (
 	id BIGSERIAL PRIMARY KEY,
 	user_id BIGINT REFERENCES users(id),
@@ -118,12 +143,16 @@ CREATE TABLE user_subscriptions (
 	)
 );
 
+CREATE TRIGGER user_subscriptions_soft_delete
+  BEFORE DELETE ON user_subscriptions
+  FOR EACH ROW EXECUTE PROCEDURE pg_soft_delete();
+
 -- keys can be assigned assigned as read, read-write or read-write-delete
 CREATE TABLE keys (
 	id BIGSERIAL PRIMARY KEY,
 	user_id BIGINT REFERENCES users(id),
 	client_key varchar(32) NOT NULL,
-	client_secret VARCHAR(32) NOT NULL,
+	client_secret VARCHAR(64) NOT NULL,
 	rights KEY_ACCESS_RIGHTS NOT NULL DEFAULT 'r',
 	disabled BOOLEAN NOT NULL DEFAULT FALSE,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -141,6 +170,49 @@ CREATE TABLE keys (
 	)
 );
 
+-- +goose StatementBegin
+CREATE TRIGGER keys_soft_delete
+	BEFORE DELETE ON keys
+	FOR EACH ROW EXECUTE PROCEDURE pg_soft_delete();
+
+CREATE OR REPLACE FUNCTION check_add_key_permitted() RETURNS trigger AS
+$$
+DECLARE
+    can_add boolean;
+BEGIN
+    WITH alloc_keys AS (
+        SELECT u.id, u.max_keys, count(k.*) AS used_keys
+        FROM users u
+                 LEFT JOIN keys k ON k.user_id = u.id
+        WHERE k.deleted_at IS NULL
+          AND u.id = 1
+          AND U.deleted_at IS NULL
+        GROUP BY u.id, u.max_keys
+    )
+    SELECT CASE
+               WHEN
+                   alloc_keys.max_keys > alloc_keys.used_keys THEN true
+               ELSE false
+               END
+    FROM alloc_keys
+    INTO can_add;
+
+    -- can happen if user is soft deleted
+    IF can_add IS NULL THEN
+        RAISE 'cannot add key';
+    ELSIF NOT can_add THEN
+        RAISE EXCEPTION 'maximum key allocation reached';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+-- +goose StatementEnd
+
+CREATE TRIGGER before_key_insert
+    BEFORE INSERT
+    ON keys
+EXECUTE PROCEDURE check_add_key_permitted();
+
 -- +goose Down
 DROP TABLE keys;
 DROP TABLE user_subscriptions;
@@ -150,3 +222,8 @@ DROP TABLE storage;
 DROP TABLE users;
 DROP TYPE upload_stage;
 DROP TYPE key_access_rights;
+DROP TYPE bcrypt;
+DROP TYPE domain_slug;
+DROP TYPE email;
+DROP FUNCTION check_add_key_permitted;
+DROP FUNCTION pg_soft_delete;

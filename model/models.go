@@ -29,6 +29,7 @@ type User struct {
 	Lastname  *string    `json:"lastname"`
 	Email     string     `json:"email"`
 	Password  []byte     `json:"-"`
+	MaxKeys   int32      `json:"max_keys"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`

@@ -1,8 +1,6 @@
 package repo
 
 import (
-	"time"
-
 	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/model"
 	"gorm.io/gorm"
@@ -96,9 +94,7 @@ func (rpo *Repo) GetUserApiKeys(ctx QueryCtx, userID int) ([]*model.Key, error) 
 }
 
 func (rpo *Repo) DeleteUserApiKey(userID int, keyID int) error {
-	res := rpo.Table("keys").
-		Where("id = ? AND user_id = ?", keyID, userID).
-		Update("deleted_at", time.Now())
+	res := rpo.Where("id = ? AND user_id = ?", keyID, userID).Delete(&model.Key{})
 
 	return res.Error
 }
