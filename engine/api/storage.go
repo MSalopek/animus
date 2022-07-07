@@ -60,8 +60,8 @@ func (api *AnimusAPI) UploadFile(c *gin.Context) {
 	c.JSON(http.StatusCreated, storage)
 }
 
-// UploadDir extracts a files from gin.Context (multipart form),
-// uploads them it to default storage bucket and publishes a PinRequest message.
+// UploadDir extracts files from gin.Context (multipart form),
+// uploads them to default storage bucket and publishes a PinRequest message.
 func (api *AnimusAPI) UploadDir(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 
