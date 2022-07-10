@@ -88,8 +88,11 @@ func (api *UserAPI) registerHandlers() {
 
 	auth.GET("/user/storage", api.GetUserUploads)
 	auth.GET("/user/storage/id/:id", api.GetStorageRecord)
+	auth.DELETE("/user/storage/id/:id", api.DeleteStorageRecord)
 	auth.POST("/user/storage/add-file", api.UploadFile)
 	auth.POST("/user/storage/add-dir", api.UploadDir)
+	auth.POST("/user/storage/pin/id/:id", api.RequestPin)
+	auth.POST("/user/storage/unpin/id/:id", api.RequestUnpin)
 
 	// TODO:
 	// auth.POST("/storage/pin/:id", WIPresponder)
