@@ -1,7 +1,7 @@
 node_api_url: "localhost:5001"
 local_shell: false
-db_dsn: "host=localhost user=animus password=animus dbname=animus port=5432 sslmode=disable"
-db_uri: "postgres://animus:animus@localhost:5432/animus"
+db_dsn: "host=localhost user=animus password=animus dbname=animus port=5436 sslmode=disable"
+db_uri: "postgres://animus:animus@localhost:5436/animus"
 debug: true
 text_logs: true
 storage:
