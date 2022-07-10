@@ -2,8 +2,10 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +15,7 @@ import (
 	"github.com/msalopek/animus/queue"
 	"github.com/msalopek/animus/storage"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 // UploadFile extracts a file from gin.Context (multipart form),
@@ -52,10 +55,9 @@ func (api *ClientAPI) UploadFile(c *gin.Context) {
 		StorageBucket: &info.Bucket,
 		StorageKey:    &info.Key,
 		UploadStage:   &stage,
-		// TODO: check if this actually works
-		Metadata:  datatypes.JSON(meta),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Metadata:      datatypes.JSON(meta),
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 
 	if buf, err := json.Marshal(info); err == nil {
@@ -87,10 +89,10 @@ func (api *ClientAPI) UploadDir(c *gin.Context) {
 	}
 
 	m := c.PostForm("meta")
-	meta := make(map[string]interface{})
+	var meta map[string]interface{}
 	if m != "" {
 		// parse to check JSON validity
-		if err := c.BindJSON(&meta); err != nil {
+		if err := json.Unmarshal([]byte(m), &meta); err != nil {
 			engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidMeta)
 			return
 		}
@@ -152,12 +154,38 @@ func (api *ClientAPI) UploadDir(c *gin.Context) {
 	c.JSON(http.StatusCreated, storage)
 }
 
-func (api *ClientAPI) GetUserUploads(c *gin.Context) {
+func (api *ClientAPI) GetStorageRecords(c *gin.Context) {
 	uid := c.GetInt("userID")
 
 	ctx := repo.QueryCtxFromGin(c)
 	storage, err := api.repo.GetUserUploads(ctx, uid)
 	if err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	c.JSON(http.StatusOK, storage)
+}
+
+func (api *ClientAPI) GetStorageRecord(c *gin.Context) {
+	uid := c.GetInt("userID")
+
+	idParam, ok := c.Params.Get("id")
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+
+	storage, err := api.repo.GetUserUploadByID(uid, id)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
+		return
+	} else if err != nil {
 		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}

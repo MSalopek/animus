@@ -87,6 +87,7 @@ func (api *UserAPI) registerHandlers() {
 	auth.DELETE("/user/keys/id/:id", api.DeleteUserKey)
 
 	auth.GET("/user/storage", api.GetUserUploads)
+	auth.GET("/user/storage/id/:id", api.GetStorageRecord)
 	auth.POST("/user/storage/add-file", api.UploadFile)
 	auth.POST("/user/storage/add-dir", api.UploadDir)
 
@@ -109,7 +110,7 @@ func (api *UserAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (api *UserAPI) Start() error {
 	api.registerHandlers()
-	api.logger.Info("starting animusd service")
+	api.logger.Info("starting clientd service")
 	err := api.server.ListenAndServe()
 	if err == http.ErrServerClosed {
 		// wait for the graceful shutdown

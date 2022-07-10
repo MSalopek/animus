@@ -32,9 +32,14 @@ func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]model.Storage, erro
 	if ctx.OrderBy != "" {
 		q.Order(clause.OrderByColumn{
 			Column: clause.Column{Name: ctx.OrderBy},
-			Desc:   !ctx.Asc},
-		)
-
+			Desc:   !ctx.Asc,
+		})
+	} else {
+		q.Order(
+			clause.OrderByColumn{
+				Column: clause.Column{Name: "id"},
+				Desc:   !ctx.Asc,
+			})
 	}
 	res := q.Find(&s)
 	if res.Error != nil {
@@ -46,6 +51,15 @@ func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]model.Storage, erro
 func (rpo *Repo) GetUserUploadByCid(userID int, cid string) (*model.Storage, error) {
 	var s model.Storage
 	res := rpo.Where("user_id = ? AND cid = ?", userID, cid).Limit(1).Find(&s)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &s, nil
+}
+
+func (rpo *Repo) GetUserUploadByID(userID, id int) (*model.Storage, error) {
+	var s model.Storage
+	res := rpo.Where("user_id = ? AND id = ?", userID, id).First(&s)
 	if res.Error != nil {
 		return nil, res.Error
 	}

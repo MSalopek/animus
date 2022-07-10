@@ -2,8 +2,10 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +14,7 @@ import (
 	"github.com/msalopek/animus/model"
 	"github.com/msalopek/animus/queue"
 	"github.com/msalopek/animus/storage"
+	"gorm.io/gorm"
 )
 
 // UploadFile extracts a file from gin.Context (multipart form),
@@ -130,6 +133,32 @@ func (api *UserAPI) GetUserUploads(c *gin.Context) {
 	ctx := repo.QueryCtxFromGin(c)
 	storage, err := api.repo.GetUserUploads(ctx, uid)
 	if err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	c.JSON(http.StatusOK, storage)
+}
+
+func (api *UserAPI) GetStorageRecord(c *gin.Context) {
+	uid := c.GetInt("userID")
+
+	idParam, ok := c.Params.Get("id")
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+
+	storage, err := api.repo.GetUserUploadByID(uid, id)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
+		return
+	} else if err != nil {
 		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}

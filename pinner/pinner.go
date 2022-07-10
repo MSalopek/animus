@@ -19,6 +19,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// internal request throttling
+// there will be at maximum defaultMaxConcurrentRequests
+// at any time during application operation
 const defaultMaxConcurrentRequests = 50
 
 type Pinner struct {
@@ -133,6 +136,7 @@ func (p *Pinner) handleAdd(wg *sync.WaitGroup, req *queue.PinRequest) {
 		Cid:         &hash,
 		UploadStage: &stage,
 		UpdatedAt:   time.Now(),
+		Pinned:      true,
 	}
 	// check errors
 	if res := p.repo.Model(s).Updates(*s); res.Error != nil {
