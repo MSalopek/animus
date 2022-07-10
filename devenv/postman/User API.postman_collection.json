@@ -138,12 +138,13 @@
 									]
 								},
 								"url": {
-									"raw": "{{user_url}}/auth/storage/add-file",
+									"raw": "{{user_url}}/auth/user/storage/add-file",
 									"host": [
 										"{{user_url}}"
 									],
 									"path": [
 										"auth",
+										"user",
 										"storage",
 										"add-file"
 									]
@@ -183,12 +184,13 @@
 									]
 								},
 								"url": {
-									"raw": "{{user_url}}/auth/storage/add-dir",
+									"raw": "{{user_url}}/auth/user/storage/add-dir",
 									"host": [
 										"{{user_url}}"
 									],
 									"path": [
 										"auth",
+										"user",
 										"storage",
 										"add-dir"
 									],
@@ -198,6 +200,31 @@
 											"value": "test-dir",
 											"disabled": true
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User Storage",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{user_url}}/auth/user/storage",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"storage"
 									]
 								}
 							},
@@ -226,35 +253,10 @@
 					]
 				},
 				{
-					"name": "User",
+					"name": "Keys",
 					"item": [
 						{
-							"name": "User Storage",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"type": "text",
-										"value": "Bearer {{token}}"
-									}
-								],
-								"url": {
-									"raw": "{{user_url}}/auth/user/storage",
-									"host": [
-										"{{user_url}}"
-									],
-									"path": [
-										"auth",
-										"user",
-										"storage"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "User Keys",
+							"name": "Fetch Keys",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -273,6 +275,166 @@
 										"auth",
 										"user",
 										"keys"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Key",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{user_url}}/auth/user/keys",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"keys"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Key - change rights",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"rights\": \"rw\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{user_url}}/auth/user/keys/id/1",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"keys",
+										"id",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Key - disable key",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"disabled\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{user_url}}/auth/user/keys/id/1",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"keys",
+										"id",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Key - update rights + disable",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"rights\": \"rwd\",\n    \"disabled\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{user_url}}/auth/user/keys/id/1",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"keys",
+										"id",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Key",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{user_url}}/auth/user/keys/id/8",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"keys",
+										"id",
+										"8"
 									]
 								}
 							},

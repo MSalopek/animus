@@ -37,4 +37,6 @@ var (
 	// failure to upload to s3 bucket or store file info in DB
 	ErrFileSaveFailed = &APIError{"failed saving file"}
 	ErrDirSaveFailed  = &APIError{"directory saving failed"}
+
+	ErrMaxKeyAllocReached = &APIError{"maximum key allocation reached"}
 )

@@ -65,7 +65,10 @@ func (rpo *Repo) GetApiClientByKey(key string) (*model.APIClient, error) {
 	res := rpo.Table("users").
 		Select("users.id AS user_id, users.email, keys.client_key, keys.client_secret").
 		Joins("JOIN keys ON keys.user_id = users.id").
-		Where("keys.client_key = ? AND keys.deleted_at IS NULL AND users.deleted_at IS NULL", key).
+		Where(`keys.client_key = ?
+			AND keys.deleted_at IS NULL
+			AND keys.disabled IS false
+			AND users.deleted_at IS NULL`, key).
 		Scan(&c)
 
 	if res.Error != nil {

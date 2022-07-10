@@ -3,6 +3,7 @@ package user
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dchest/uniuri"
@@ -31,17 +32,20 @@ func (api *UserAPI) CreateUserKey(c *gin.Context) {
 	uid := c.GetInt("userID")
 
 	createdAt := time.Now()
-	secret := uniuri.NewLen(32)
 	key := model.Key{
 		UserID:       int64(uid),
 		ClientKey:    uniuri.NewLen(32),
-		ClientSecret: secret,
+		ClientSecret: uniuri.NewLen(64),
 		Rights:       model.ClientAccessRead,
 		CreatedAt:    createdAt,
 		ValidFrom:    createdAt,
+		ValidTo:      model.PgTime{Infinity: true},
 	}
 	res := api.repo.Create(&key)
-	if res.Error != nil {
+	if res.Error != nil && strings.Contains(res.Error.Error(), engine.ErrMaxKeyAllocReached.Error()) {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrMaxKeyAllocReached)
+		return
+	} else if res.Error != nil {
 		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}

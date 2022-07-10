@@ -83,8 +83,8 @@ func (api *UserAPI) registerHandlers() {
 
 	auth.GET("/user/keys", api.GetUserKeys)
 	auth.POST("/user/keys", api.CreateUserKey)
-	auth.PATCH("/user/keys/id/:id", api.GetUserUploads)
-	auth.DELETE("/user/keys/id/:id", api.GetUserUploads)
+	auth.PATCH("/user/keys/id/:id", api.UpdateUserKey)
+	auth.DELETE("/user/keys/id/:id", api.DeleteUserKey)
 
 	auth.GET("/user/storage", api.GetUserUploads)
 	auth.POST("/user/storage/add-file", api.UploadFile)

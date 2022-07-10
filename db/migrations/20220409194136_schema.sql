@@ -159,7 +159,7 @@ CREATE TABLE keys (
 	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
 	valid_from TIMESTAMP NOT NULL DEFAULT now(),
-	valid_to TIMESTAMP NOT NULL,
+	valid_to TIMESTAMP NOT NULL DEFAULT 'infinity',
 
 	CONSTRAINT keys_valid_to_valid_from CHECK (valid_to >= valid_from),
 	CONSTRAINT keys_created_at_valid_from CHECK (created_at <= valid_from),
