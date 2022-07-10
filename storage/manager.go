@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"os"
 	"path"
 	"strings"
@@ -42,6 +43,24 @@ type Upload struct {
 
 type Uploads struct {
 	Uploads []*Upload `json:"uploads"`
+}
+
+// FileStreamer can stream from reader and upload to target bucket.
+type FileStreamer interface {
+	StreamFile(ctx context.Context, bucket, fname string, reader io.Reader, size int64, opts Opts) (*Upload, error)
+}
+
+// UploadFile is a convenience method for uploading file using FileStreamer interface using default storage options.
+func UploadFile(fs FileStreamer, file *multipart.FileHeader, bucket, objName string) (*Upload, error) {
+	src, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer src.Close()
+
+	// TODO: add deadline
+	ctx := context.Background()
+	return fs.StreamFile(ctx, bucket, objName, src, file.Size, Opts{})
 }
 
 // Initializes new manager with provided configuration.

@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "387bc544-c7c6-4cf3-9a3b-03ec5449297d",
-		"name": "Animus API",
+		"name": "User API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -28,13 +28,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8083/api/register",
+							"raw": "{{user_url}}/register",
 							"host": [
-								"localhost"
+								"{{user_url}}"
 							],
-							"port": "8083",
 							"path": [
-								"api",
 								"register"
 							]
 						}
@@ -62,13 +60,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8083/api/ping",
+							"raw": "{{user_url}}/ping",
 							"host": [
-								"localhost"
+								"{{user_url}}"
 							],
-							"port": "8083",
 							"path": [
-								"api",
 								"ping"
 							]
 						}
@@ -95,13 +91,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8083/api/login",
+							"raw": "{{user_url}}/login",
 							"host": [
-								"localhost"
+								"{{user_url}}"
 							],
-							"port": "8083",
 							"path": [
-								"api",
 								"login"
 							]
 						}
@@ -144,13 +138,11 @@
 									]
 								},
 								"url": {
-									"raw": "localhost:8083/api/auth/storage/add-file",
+									"raw": "{{user_url}}/auth/storage/add-file",
 									"host": [
-										"localhost"
+										"{{user_url}}"
 									],
-									"port": "8083",
 									"path": [
-										"api",
 										"auth",
 										"storage",
 										"add-file"
@@ -191,13 +183,11 @@
 									]
 								},
 								"url": {
-									"raw": "localhost:8083/api/auth/storage/add-dir",
+									"raw": "{{user_url}}/auth/storage/add-dir",
 									"host": [
-										"localhost"
+										"{{user_url}}"
 									],
-									"port": "8083",
 									"path": [
-										"api",
 										"auth",
 										"storage",
 										"add-dir"
@@ -239,7 +229,7 @@
 					"name": "User",
 					"item": [
 						{
-							"name": "Get User Storage",
+							"name": "User Storage",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -250,17 +240,39 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8083/api/auth/user/1/storage",
+									"raw": "{{user_url}}/auth/user/storage",
 									"host": [
-										"localhost"
+										"{{user_url}}"
 									],
-									"port": "8083",
 									"path": [
-										"api",
 										"auth",
 										"user",
-										"1",
 										"storage"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User Keys",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{user_url}}/auth/user/keys",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"keys"
 									]
 								}
 							},
@@ -280,13 +292,11 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8083/api/auth/whoami",
+							"raw": "{{user_url}}/auth/whoami",
 							"host": [
-								"localhost"
+								"{{user_url}}"
 							],
-							"port": "8083",
 							"path": [
-								"api",
 								"auth",
 								"whoami"
 							]

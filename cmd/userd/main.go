@@ -13,12 +13,11 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/msalopek/animus/engine"
-	"github.com/msalopek/animus/engine/api"
 	"github.com/msalopek/animus/engine/repo"
+	"github.com/msalopek/animus/engine/user"
 )
 
-var cfgPath = flag.String("config", "", "path to animusd configuration file")
+var cfgPath = flag.String("config", "", "path to userd configuration file")
 
 func main() {
 	flag.Parse()
@@ -30,7 +29,7 @@ func main() {
 		log.Fatalf("error reading config file: %s", &err)
 	}
 
-	var cfg engine.Config
+	var cfg user.Config
 	if err := yaml.Unmarshal(file, &cfg); err != nil {
 		log.Fatalf("error unmarshaling config %s", err)
 	}
@@ -62,12 +61,12 @@ func main() {
 	}
 	repo := repo.New(db)
 
-	api := api.New(&cfg, repo, logger, done)
+	svc := user.New(&cfg, repo, logger, done)
 
-	go api.Start()
+	go svc.Start()
 
 	<-ctx.Done()
-	err = api.Stop()
+	err = svc.Stop()
 	if err != nil {
 		logger.Error(err)
 	}

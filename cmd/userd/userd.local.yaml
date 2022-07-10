@@ -5,8 +5,8 @@ cors_origins:
     - "http://localhost:3000"
 
 http_port: "localhost:8083"
-db_dsn: "host=localhost user=animus password=animus dbname=animus port=5432 sslmode=disable"
-db_uri: "postgres://animus:animus@localhost:5432/animus"
+db_dsn: "host=localhost user=animus password=animus dbname=animus port=5436 sslmode=disable"
+db_uri: "postgres://animus:animus@localhost:5436/animus"
 debug: true
 text_logs: true
 bucket: "animus"
@@ -18,3 +18,4 @@ storage:
     access_key_secret: "H+gdD9eaBYuBEbtyRTblmVdQSAXVBLjim83r9I+H"
 nsq_topic: "pin-requests"
 nsqd_url: "localhost:4150"
+gin_mode: ""

@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -54,10 +53,10 @@ func (a *Auth) ValidateToken(signedToken string) (*AuthClaim, error) {
 
 	claims, ok := token.Claims.(*AuthClaim)
 	if !ok {
-		return nil, errors.New(engine.ErrJWTClaimUnprocessable)
+		return nil, engine.ErrJWTClaimUnprocessable
 	}
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return nil, errors.New(engine.ErrJWTExpired)
+		return nil, engine.ErrJWTExpired
 	}
 
 	return claims, nil

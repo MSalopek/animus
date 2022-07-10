@@ -1,4 +1,4 @@
-package api
+package user
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/msalopek/animus/engine"
-	"github.com/msalopek/animus/engine/api/auth"
+	"github.com/msalopek/animus/engine/user/auth"
 	"github.com/msalopek/animus/model"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +27,7 @@ func protectedHandler(c *gin.Context) {
 	// auth middleware injects this
 	email := c.GetString("email")
 	if len(email) < 1 {
-		abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 	c.JSON(200, gin.H{
@@ -58,7 +58,7 @@ func getValidTestToken() string {
 	return t
 }
 
-func TestauthorizeUserRequestMissingAuthHeader(t *testing.T) {
+func TestAuthorizeUserRequestMissingAuthHeader(t *testing.T) {
 	router := routerWithAuthMiddleware()
 	router.GET("/protected", protectedHandler)
 
@@ -82,7 +82,7 @@ func TestAuthInvalidTokenFormat(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestauthorizeUserRequestInvalidToken(t *testing.T) {
+func TestAuthorizeUserRequestInvalidToken(t *testing.T) {
 	router := routerWithAuthMiddleware()
 	router.GET("/protected", protectedHandler)
 

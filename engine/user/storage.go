@@ -1,14 +1,13 @@
-package api
+package user
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"mime/multipart"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/repo"
 	"github.com/msalopek/animus/model"
 	"github.com/msalopek/animus/queue"
@@ -17,19 +16,19 @@ import (
 
 // UploadFile extracts a file from gin.Context (multipart form),
 // uploads it to default storage bucket and publishes a PinRequest message.
-func (api *AnimusAPI) UploadFile(c *gin.Context) {
+func (api *UserAPI) UploadFile(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.String(http.StatusBadRequest, "get form err: %s", err.Error())
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrUnprocessableFormFile)
 		return
 	}
 
 	objPath := fmt.Sprintf("%d/%s", ctxUID, file.Filename)
-	info, err := api.uploadFile(file, objPath)
+	info, err := storage.UploadFile(api.storage, file, api.cfg.Bucket, objPath)
 	if err != nil {
-		abortWithError(c, http.StatusInternalServerError, err.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrFileSaveFailed)
 		return
 	}
 
@@ -49,12 +48,12 @@ func (api *AnimusAPI) UploadFile(c *gin.Context) {
 	}
 
 	if res := api.repo.Save(storage); res.Error != nil {
-		abortWithError(c, http.StatusInternalServerError, res.Error.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrFileSaveFailed)
 		return
 	}
 
 	if err := api.publishPinRequest(storage); err != nil {
-		abortWithError(c, http.StatusInternalServerError, err.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 	c.JSON(http.StatusCreated, storage)
@@ -62,18 +61,18 @@ func (api *AnimusAPI) UploadFile(c *gin.Context) {
 
 // UploadDir extracts files from gin.Context (multipart form),
 // uploads them to default storage bucket and publishes a PinRequest message.
-func (api *AnimusAPI) UploadDir(c *gin.Context) {
+func (api *UserAPI) UploadDir(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 
 	dirname := c.PostForm("name")
 	if dirname == "" {
-		abortWithError(c, http.StatusBadRequest, "missing directory name")
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrMissingFormDirName)
 		return
 	}
 
 	form, err := c.MultipartForm()
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, err.Error())
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrUnprocessableMultipartForm)
 		return
 	}
 
@@ -81,16 +80,16 @@ func (api *AnimusAPI) UploadDir(c *gin.Context) {
 	files := form.File["files"]
 	for _, f := range files {
 		objPath := fmt.Sprintf("%d/%s/%s", ctxUID, dirname, f.Filename)
-		info, err := api.uploadFile(f, objPath)
+		info, err := storage.UploadFile(api.storage, f, api.cfg.Bucket, objPath)
 		if err != nil {
-			abortWithError(c, http.StatusInternalServerError, err.Error())
+			engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 			return
 		}
 		meta.Uploads = append(meta.Uploads, info)
 	}
 
 	if len(meta.Uploads) < 1 {
-		abortWithError(c, http.StatusInternalServerError, "something went wrong")
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 
@@ -101,7 +100,7 @@ func (api *AnimusAPI) UploadDir(c *gin.Context) {
 		UserID:        int64(ctxUID),
 		Name:          dirname,
 		Dir:           true,
-		StorageBucket: &meta.Uploads[0].Bucket,
+		StorageBucket: &api.cfg.Bucket,
 		StorageKey:    &key,
 		UploadStage:   &stage,
 		CreatedAt:     time.Now(),
@@ -113,48 +112,37 @@ func (api *AnimusAPI) UploadDir(c *gin.Context) {
 	}
 
 	if res := api.repo.Save(storage); res.Error != nil {
-		abortWithError(c, http.StatusInternalServerError, res.Error.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrDirSaveFailed)
 		return
 	}
 
 	if err := api.publishPinRequest(storage); err != nil {
-		abortWithError(c, http.StatusInternalServerError, err.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 
 	c.JSON(http.StatusCreated, storage)
 }
 
-func (api *AnimusAPI) GetUserUploads(c *gin.Context) {
+func (api *UserAPI) GetUserUploads(c *gin.Context) {
 	uid := c.GetInt("userID")
 
 	ctx := repo.QueryCtxFromGin(c)
 	storage, err := api.repo.GetUserUploads(ctx, uid)
 	if err != nil {
-		abortWithError(c, http.StatusInternalServerError, err.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 
 	c.JSON(http.StatusOK, storage)
 }
 
-func (api *AnimusAPI) uploadFile(file *multipart.FileHeader, objName string) (*storage.Upload, error) {
-	src, err := file.Open()
-	if err != nil {
-		return nil, err
-	}
-	defer src.Close()
-
-	// TODO: add deadline
-	ctx := context.Background()
-	return api.storage.StreamFile(ctx, api.cfg.Bucket, objName, src, file.Size, storage.Opts{})
-}
-
-func (api *AnimusAPI) publishPinRequest(m *model.Storage) error {
+func (api *UserAPI) publishPinRequest(m *model.Storage) error {
 	pr := queue.PinRequest{
 		StorageID: int(m.ID),
 		Key:       *m.StorageKey,
 		Dir:       m.Dir,
+		Source:    queue.SourceUser,
 	}
 	body, err := json.Marshal(pr)
 	if err != nil {

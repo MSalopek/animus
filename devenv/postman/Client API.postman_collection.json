@@ -1,0 +1,159 @@
+{
+	"info": {
+		"_postman_id": "642f1d9c-f3a0-4e19-8e26-0d7a3d326979",
+		"name": "Client API",
+		"description": "Animus Client API endpoints.\nThis API uses custom API key auth schemes.\nEach request must have the following headers set:\n1. X-API-KEY that is equal to the provided client_key\n2. X-API-SIGN which is an HMAC signature consisting in the form HMAC256(URI, client_secret)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User Storage",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{client_url}}/auth/storage",
+					"host": [
+						"{{client_url}}"
+					],
+					"path": [
+						"auth",
+						"storage"
+					]
+				},
+				"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+			},
+			"response": []
+		},
+		{
+			"name": "WhoAmI",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{client_url}}/auth/whoami",
+					"host": [
+						"{{client_url}}"
+					],
+					"path": [
+						"auth",
+						"whoami"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ping",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"connection": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"admin\",\n    \"firstname\": \"Animus\",\n    \"lastname\": \"Administrator\",\n    \"password\": \"admin\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{client_url}}/ping",
+					"host": [
+						"{{client_url}}"
+					],
+					"path": [
+						"ping"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// pm.request.url.getPath() contains just the resource path without the hostname",
+					"// example: https://some.host.com/my-path -> would return: /my-path",
+					"console.log(",
+					"  \"## X-API-SIGN\",",
+					"  CryptoJS.HmacSHA256(",
+					"    pm.request.url.getPath(),",
+					"    pm.collectionVariables.get(\"client_secret\")",
+					"  ).toString()",
+					");",
+					"",
+					"pm.request.headers.add({",
+					"  key: \"X-API-KEY\",",
+					"  value: pm.collectionVariables.get(\"client_key\"),",
+					"});",
+					"pm.request.headers.add({",
+					"  key: \"X-API-SIGN\",",
+					"  value: CryptoJS.HmacSHA256(",
+					"      pm.request.url.getPath(),",
+					"      pm.collectionVariables.get(\"client_secret\")",
+					"    ).toString(),",
+					"});",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "client_key",
+			"value": "aEdcerBC7N1Y82N14bVEo7KWIiM0Ntje"
+		},
+		{
+			"key": "client_secret",
+			"value": "dnkHJySctQFTm39TXy0kY3Z8awUBITK1deMwsdpMkzi06Dc7ZqxAeyNYVO9m7uZP"
+		}
+	]
+}

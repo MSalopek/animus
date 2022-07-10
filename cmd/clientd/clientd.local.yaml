@@ -1,0 +1,15 @@
+http_port: "localhost:8084"
+db_dsn: "host=localhost user=animus password=animus dbname=animus port=5436 sslmode=disable"
+db_uri: "postgres://animus:animus@localhost:5436/animus"
+debug: true
+text_logs: true
+bucket: "animus"
+storage:
+    lifetime: 2
+    region: "eu-central-1"
+    endpoint: "localhost:9000"
+    access_key_id: "AYEKOSQDTJR0E12W2BRS"
+    access_key_secret: "H+gdD9eaBYuBEbtyRTblmVdQSAXVBLjim83r9I+H"
+nsq_topic: "pin-requests"
+nsqd_url: "localhost:4150"
+gin_mode: ""

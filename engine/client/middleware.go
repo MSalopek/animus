@@ -1,6 +1,8 @@
-package api
+package client
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"net/http"
@@ -8,8 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/model"
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
+
 	"gorm.io/gorm"
 )
 
@@ -18,51 +19,39 @@ type APIClientProvider interface {
 	GetApiClientByKey(key string) (*model.APIClient, error)
 }
 
-func requestLogger(logger *logrus.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		logger.WithFields(
-			log.Fields{
-				"method":  c.Request.Method,
-				"URL":     c.Request.URL,
-				"headers": c.Request.Header,
-			}).Info("new api request")
-		c.Next()
-	}
-}
-
 // client is an application using client_key + client_secret
 func authorizeClientRequest(prov APIClientProvider) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearer := c.Request.Header.Get("Authorization")
 		if bearer != "" {
-			abortWithError(c, http.StatusBadRequest, engine.ErrInvalidClientAuth)
+			engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidClientAuth)
 			return
 		}
 
 		key := c.Request.Header.Get("X-API-KEY")
 		if key == "" {
-			abortWithError(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)
+			engine.AbortErr(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)
 			return
 		}
 
 		sig := c.Request.Header.Get("X-API-SIGN")
 		if sig == "" {
-			abortWithError(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)
+			engine.AbortErr(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)
 			return
 		}
 
 		decSig, err := hex.DecodeString(sig)
 		if err != nil {
-			abortWithError(c, http.StatusBadRequest, engine.ErrInvalidClientSignature)
+			engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidClientSignature)
 			return
 		}
 
 		client, err := prov.GetApiClientByKey(key)
 		if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-			abortWithError(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)
+			engine.AbortErr(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)
 			return
 		} else if err != nil {
-			abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)
+			engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 			return
 		}
 
@@ -70,7 +59,7 @@ func authorizeClientRequest(prov APIClientProvider) gin.HandlerFunc {
 			decSig,
 			[]byte(client.ClientSecret)) {
 
-			abortWithError(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)
+			engine.AbortErr(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)
 			return
 		}
 
@@ -79,4 +68,13 @@ func authorizeClientRequest(prov APIClientProvider) gin.HandlerFunc {
 		c.Set("email", client.Email)
 		c.Next()
 	}
+}
+
+// ValidateSignature reports whether signature is a valid HMAC for message.
+// https://pkg.go.dev/crypto/hmac
+func ValidateSignature(message, signature, key []byte) bool {
+	mac := hmac.New(sha256.New, key)
+	mac.Write(message)
+	expected := mac.Sum(nil)
+	return hmac.Equal(signature, expected)
 }

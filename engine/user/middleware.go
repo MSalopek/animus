@@ -1,4 +1,4 @@
-package api
+package user
 
 import (
 	"net/http"
@@ -8,8 +8,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/msalopek/animus/engine"
-	"github.com/msalopek/animus/engine/api/auth"
 	"github.com/msalopek/animus/engine/repo"
+	"github.com/msalopek/animus/engine/user/auth"
 )
 
 func handleCORS(allowedOrigins []string) gin.HandlerFunc {
@@ -48,7 +48,7 @@ func authorizeUserRequest(authority *auth.Auth) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearer := c.Request.Header.Get("Authorization")
 		if bearer == "" {
-			abortWithError(c, http.StatusForbidden, engine.ErrNoAuthHeader)
+			engine.AbortErr(c, http.StatusForbidden, engine.ErrNoAuthHeader)
 			return
 		}
 
@@ -57,15 +57,13 @@ func authorizeUserRequest(authority *auth.Auth) gin.HandlerFunc {
 		if len(ts) == 2 {
 			bearer = strings.TrimSpace(ts[1])
 		} else {
-			abortWithError(c, http.StatusBadRequest, engine.ErrInvalidAuthToken)
+			engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidAuthToken)
 			return
 		}
 
 		claims, err := authority.ValidateToken(bearer)
 		if err != nil {
-			// TODO: log exact error
-			// abortWithError(c, http.StatusUnauthorized, engine.ErrUnauthorized)
-			abortWithError(c, http.StatusUnauthorized, err.Error())
+			engine.AbortErr(c, http.StatusUnauthorized, engine.ErrUnauthorized)
 			return
 		}
 
@@ -80,13 +78,13 @@ func authorizeUser(repo *repo.Repo) gin.HandlerFunc {
 		// injected by authorizeRequest
 		email := c.GetString("email")
 		if email == "" {
-			abortWithError(c, http.StatusUnauthorized, engine.ErrUnauthorized)
+			engine.AbortErr(c, http.StatusUnauthorized, engine.ErrUnauthorized)
 			return
 		}
 
 		user, err := repo.GetUserByEmail(email)
 		if err != nil {
-			abortWithError(c, http.StatusForbidden, engine.ErrForbidden)
+			engine.AbortErr(c, http.StatusForbidden, engine.ErrForbidden)
 			return
 		}
 

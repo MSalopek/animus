@@ -1,4 +1,4 @@
-package api
+package user
 
 import (
 	"net/http"
@@ -12,20 +12,22 @@ import (
 	"github.com/msalopek/animus/model"
 )
 
-func (api *AnimusAPI) GetUserKeys(c *gin.Context) {
+func (api *UserAPI) GetUserKeys(c *gin.Context) {
 	uid := c.GetInt("userID")
 	ctx := repo.QueryCtxFromGin(c)
 	keys, err := api.repo.GetUserApiKeys(ctx, uid)
 	if err != nil {
-		abortWithError(c, http.StatusInternalServerError, err.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 
 	c.JSON(http.StatusOK, keys)
 }
 
-// TODO: restrict number of keys
-func (api *AnimusAPI) CreateUserKey(c *gin.Context) {
+// CreateUserKey creates a new API key.
+// If the user has reached their maximum key allocation the
+// creation will fail. The key allocation is tracked on the DB using triggers.
+func (api *UserAPI) CreateUserKey(c *gin.Context) {
 	uid := c.GetInt("userID")
 
 	createdAt := time.Now()
@@ -40,8 +42,7 @@ func (api *AnimusAPI) CreateUserKey(c *gin.Context) {
 	}
 	res := api.repo.Create(&key)
 	if res.Error != nil {
-		// TODO: don't leak DB errors
-		abortWithError(c, http.StatusInternalServerError, res.Error.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 
@@ -60,30 +61,29 @@ func (api *AnimusAPI) CreateUserKey(c *gin.Context) {
 	})
 }
 
-func (api *AnimusAPI) UpdateUserKey(c *gin.Context) {
+func (api *UserAPI) UpdateUserKey(c *gin.Context) {
 	uid := c.GetInt("userID")
 	id, ok := c.Params.Get("id")
 	if !ok {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
 		return
 	}
 
 	keyId, err := strconv.Atoi(id)
 	if !ok {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
 		return
 	}
 
 	var req engine.UpdateKeyRequest
 	if err := c.BindJSON(&req); err != nil {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidRequestBody)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidRequestBody)
 		return
 	}
 
 	updated, err := api.repo.UpdateUserApiKey(uid, int(keyId), &req)
 	if err != nil {
-		// TODO: don't leak DB errors
-		abortWithError(c, http.StatusInternalServerError, err.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 
@@ -91,24 +91,23 @@ func (api *AnimusAPI) UpdateUserKey(c *gin.Context) {
 
 }
 
-func (api *AnimusAPI) DeleteUserKey(c *gin.Context) {
+func (api *UserAPI) DeleteUserKey(c *gin.Context) {
 	uid := c.GetInt("userID")
 	id, ok := c.Params.Get("id")
 	if !ok {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
 		return
 	}
 
 	keyId, err := strconv.Atoi(id)
 	if !ok {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
 		return
 	}
 
 	err = api.repo.DeleteUserApiKey(uid, int(keyId))
 	if err != nil {
-		// TODO: don't leak DB errors
-		abortWithError(c, http.StatusInternalServerError, err.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 

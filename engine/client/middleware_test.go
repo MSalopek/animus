@@ -1,4 +1,4 @@
-package api
+package client
 
 import (
 	"crypto/hmac"
@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/model"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,6 +17,7 @@ import (
 const (
 	testclientkey    = "test-client-key"
 	testclientsecret = "my-supersecret-is-here"
+	testemail        = "client-unit-test@example.com"
 )
 
 type mockProvider struct{}
@@ -26,6 +28,18 @@ func (mp *mockProvider) GetApiClientByKey(key string) (*model.APIClient, error) 
 		Email:        "email@example.com",
 		ClientKey:    testclientkey,
 		ClientSecret: testclientsecret}, nil
+}
+
+func protectedHandler(c *gin.Context) {
+	// auth middleware injects this
+	email := c.GetString("email")
+	if len(email) < 1 {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+	c.JSON(200, gin.H{
+		"email": testemail,
+	})
 }
 
 func clientApiRouter() *gin.Engine {

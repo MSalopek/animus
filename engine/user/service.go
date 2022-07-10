@@ -1,4 +1,4 @@
-package api
+package user
 
 import (
 	"context"
@@ -9,14 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/msalopek/animus/engine"
-	"github.com/msalopek/animus/engine/api/auth"
 	"github.com/msalopek/animus/engine/repo"
+	"github.com/msalopek/animus/engine/user/auth"
 	"github.com/msalopek/animus/queue"
 	"github.com/msalopek/animus/storage"
 	log "github.com/sirupsen/logrus"
 )
 
-type AnimusAPI struct {
+type UserAPI struct {
 	engine    *gin.Engine
 	server    *http.Server
 	storage   *storage.Manager
@@ -27,10 +27,10 @@ type AnimusAPI struct {
 
 	done chan struct{}
 
-	cfg *engine.Config
+	cfg *Config
 }
 
-func New(cfg *engine.Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *AnimusAPI {
+func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *UserAPI {
 	if cfg == nil {
 		panic("config must be provided")
 	}
@@ -38,16 +38,21 @@ func New(cfg *engine.Config, repo *repo.Repo, logger *log.Logger, done chan stru
 		panic("Repo must be provided")
 	}
 
-	engine := gin.New()
-	// CORS defined on all routes
-	engine.Use(handleCORS(cfg.CORSOrigins))
-	s := &AnimusAPI{
+	if cfg.GinMode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	e := gin.New()
+	e.Use(
+		// CORS defined on all routes
+		handleCORS(cfg.CORSOrigins),
+		engine.LogRequest(logger))
+	s := &UserAPI{
 		cfg: cfg,
 
-		engine: engine,
+		engine: e,
 		server: &http.Server{
 			Addr:    cfg.HttpPort,
-			Handler: engine,
+			Handler: e,
 		},
 		repo: repo,
 		auth: &auth.Auth{
@@ -61,12 +66,11 @@ func New(cfg *engine.Config, repo *repo.Repo, logger *log.Logger, done chan stru
 		logger:    logger,
 	}
 
-	engine.Use(requestLogger(logger))
 	return s
 }
 
-func (api *AnimusAPI) registerHandlers() {
-	root := api.engine.Group("/api")
+func (api *UserAPI) registerHandlers() {
+	root := api.engine.Group("/")
 	root.GET("/ping", api.Ping)
 	root.POST("/login", api.Login)
 	root.POST("/register", api.Register)
@@ -83,17 +87,8 @@ func (api *AnimusAPI) registerHandlers() {
 	auth.DELETE("/user/keys/id/:id", api.GetUserUploads)
 
 	auth.GET("/user/storage", api.GetUserUploads)
-	auth.POST("/storage/add-file", api.UploadFile)
-	auth.POST("/storage/add-dir", api.UploadDir)
-
-	// /gate group is for key-secret auth for API access
-	gate := root.Group("/gate").Use(
-		authorizeClientRequest(api.repo),
-	)
-	gate.GET("/whoami", api.WhoAmI)
-	gate.GET("/storage", api.GetUserUploads)
-	gate.POST("/storage/add-file", api.UploadFile)
-	gate.POST("/storage/add-dir", api.UploadDir)
+	auth.POST("/user/storage/add-file", api.UploadFile)
+	auth.POST("/user/storage/add-dir", api.UploadDir)
 
 	// TODO:
 	// auth.POST("/storage/pin/:id", WIPresponder)
@@ -108,11 +103,11 @@ func (api *AnimusAPI) registerHandlers() {
 	// auth.GET("/gates/user/:id", WIPresponder)
 }
 
-func (api *AnimusAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (api *UserAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	api.engine.ServeHTTP(w, r)
 }
 
-func (api *AnimusAPI) Start() error {
+func (api *UserAPI) Start() error {
 	api.registerHandlers()
 	api.logger.Info("starting animusd service")
 	err := api.server.ListenAndServe()
@@ -128,7 +123,7 @@ func (api *AnimusAPI) Start() error {
 	return err
 }
 
-func (api *AnimusAPI) Stop() error {
+func (api *UserAPI) Stop() error {
 	api.logger.Info("graceful shutdown initiated")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -151,7 +146,7 @@ func (api *AnimusAPI) Stop() error {
 	return nil
 }
 
-func (api *AnimusAPI) Ping(c *gin.Context) {
+func (api *UserAPI) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "OK",
 	})

@@ -1,4 +1,4 @@
-package api
+package user
 
 import (
 	"errors"
@@ -38,16 +38,16 @@ func (c *Credentials) Validate() error {
 	}
 	return nil
 }
-func (api *AnimusAPI) Register(c *gin.Context) {
+func (api *UserAPI) Register(c *gin.Context) {
 	var creds Credentials
 
 	if err := c.BindJSON(&creds); err != nil {
-		abortWithError(c, http.StatusBadRequest, engine.ErrCouldNotRegister)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrCouldNotRegister)
 		return
 	}
 
 	if err := creds.Validate(); err != nil {
-		abortWithError(c, http.StatusBadRequest, err.Error())
+		engine.AbortErr(c, http.StatusBadRequest, err)
 		return
 	}
 
@@ -62,41 +62,40 @@ func (api *AnimusAPI) Register(c *gin.Context) {
 	}
 	res := api.repo.Create(&user)
 	if res.Error != nil {
-		// TODO: don't leak DB errors
-		abortWithError(c, http.StatusInternalServerError, res.Error.Error())
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrCouldNotRegister)
 		return
 	}
 
 	c.JSON(http.StatusCreated, user)
 }
 
-func (api *AnimusAPI) Login(c *gin.Context) {
+func (api *UserAPI) Login(c *gin.Context) {
 	var creds Credentials
 
 	// TODO: log body for debugging
 	if err := c.BindJSON(&creds); err != nil {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidCredentials)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidCredentials)
 		return
 	}
 
 	if len(creds.Email) < 1 || len(creds.Password) < 1 {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidCredentials)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidCredentials)
 		return
 	}
 
 	user, err := api.repo.GetUserByEmail(creds.Email)
 	if err == gorm.ErrRecordNotFound {
-		abortWithError(c, http.StatusNotFound, engine.ErrNotFound)
+		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(creds.Password)); err != nil {
-		abortWithError(c, http.StatusBadRequest, engine.ErrInvalidCredentials)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidCredentials)
 		return
 	}
 
 	token, err := api.auth.GenerateToken(user.Email)
 	if err != nil {
-		abortWithError(c, http.StatusInternalServerError, engine.ErrCouldNotLogin)
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrCouldNotLogin)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -104,21 +103,21 @@ func (api *AnimusAPI) Login(c *gin.Context) {
 	})
 }
 
-func (api *AnimusAPI) WhoAmI(c *gin.Context) {
+func (api *UserAPI) WhoAmI(c *gin.Context) {
 	email := c.GetString("email")
 	if len(email) < 1 {
-		abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 
 	user, err := api.repo.GetUserByEmail(email)
 	if err == gorm.ErrRecordNotFound {
-		abortWithError(c, http.StatusNotFound, engine.ErrNotFound)
+		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
 		return
 	}
 
 	if err != nil {
-		abortWithError(c, http.StatusInternalServerError, engine.ErrInternalError)
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 

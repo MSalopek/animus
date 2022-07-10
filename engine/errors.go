@@ -1,26 +1,40 @@
 package engine
 
-const (
-	ErrNotFound      = "not found"
-	ErrInternalError = "internal error"
-	ErrUnauthorized  = "unauthorized"
-	ErrForbidden     = "forbidden"
+type APIError struct {
+	ErrString string
+}
 
-	ErrCouldNotLogin      = "could not log in"
-	ErrCouldNotRegister   = "could not register"
-	ErrInvalidCredentials = "invalid credentials"
-	ErrNoAuthHeader       = "Authorization header not provided"
-	ErrInvalidAuthToken   = "invalid Authorization token"
+func (e *APIError) Error() string { return e.ErrString }
 
-	ErrInvalidClientAuth      = "invalid client authorization"
-	ErrInvalidClientSignature = "invalid client signature"
+var (
+	ErrNotFound      = &APIError{"not found"}
+	ErrInternalError = &APIError{"internal error"}
+	ErrUnauthorized  = &APIError{"unauthorized"}
+	ErrForbidden     = &APIError{"forbidden"}
 
-	ErrJWTExpired            = "JWT expired"
-	ErrJWTClaimUnprocessable = "unprocessable JWT"
+	ErrCouldNotLogin      = &APIError{"could not log in"}
+	ErrCouldNotRegister   = &APIError{"could not register"}
+	ErrInvalidCredentials = &APIError{"invalid credentials"}
+	ErrNoAuthHeader       = &APIError{"Authorization header not provided"}
+	ErrInvalidAuthToken   = &APIError{"invalid Authorization token"}
 
-	ErrInvalidMeta        = "unprocessable meta field"
-	ErrUserNotFound       = "user not found"
-	ErrInvalidQueryParam  = "invalid query param"
-	ErrInvalidRequestBody = "invalid request body"
-	ErrNotADirectory      = "not a directory"
+	ErrInvalidClientAuth      = &APIError{"invalid client authorization"}
+	ErrInvalidClientSignature = &APIError{"invalid client signature"}
+
+	ErrJWTExpired            = &APIError{"JWT expired"}
+	ErrJWTClaimUnprocessable = &APIError{"unprocessable JWT"}
+
+	ErrInvalidMeta        = &APIError{"unprocessable meta field"}
+	ErrUserNotFound       = &APIError{"user not found"}
+	ErrInvalidQueryParam  = &APIError{"invalid query param"}
+	ErrInvalidRequestBody = &APIError{"invalid request body"}
+	ErrNotADirectory      = &APIError{"not a directory"}
+
+	ErrUnprocessableFormFile      = &APIError{"unprocessable form file"}
+	ErrUnprocessableMultipartForm = &APIError{"unprocessable multipart form"}
+	ErrMissingFormDirName         = &APIError{"missing directory name"}
+
+	// failure to upload to s3 bucket or store file info in DB
+	ErrFileSaveFailed = &APIError{"failed saving file"}
+	ErrDirSaveFailed  = &APIError{"directory saving failed"}
 )

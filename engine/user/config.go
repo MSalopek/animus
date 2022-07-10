@@ -1,4 +1,4 @@
-package engine
+package user
 
 import (
 	"errors"
@@ -27,6 +27,7 @@ type Config struct {
 
 	Bucket  string         `json:"bucket,omitempty" yaml:"bucket"`
 	Storage storage.Config `json:"storage,omitempty" yaml:"storage"`
+	GinMode string         `json:"gin_mode,omitempty" yaml:"gin_mode"`
 }
 
 // Validate validates config.

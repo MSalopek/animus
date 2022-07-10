@@ -42,7 +42,7 @@ type Storage struct {
 	UserID   int64          `json:"-"`
 	Name     string         `json:"name"`
 	Public   bool           `json:"public"`
-	Metadata datatypes.JSON `json:"-"`
+	Metadata datatypes.JSON `json:"meta"`
 	Hash     *string        `json:"hash,omitempty"`
 
 	UploadStage   *string `json:"stage"`
