@@ -2,6 +2,7 @@ package pinner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -21,8 +22,8 @@ import (
 
 // internal request throttling
 // there will be at maximum defaultMaxConcurrentRequests
-// at any time during application operation
-const defaultMaxConcurrentRequests = 50
+// goroutines at any time during application operation
+const defaultMaxConcurrentRequests = 5
 
 type Pinner struct {
 	sm *storage.Manager // s3 compatible storage
@@ -44,6 +45,7 @@ type Pinner struct {
 
 func New(conf *Config, repo *repo.Repo, logger *log.Logger) *Pinner {
 	p := &Pinner{
+		autoPin:  true,
 		Messages: make(chan []byte),
 
 		repo: repo,
@@ -104,17 +106,26 @@ func (p *Pinner) HandlePinRequests(wg *sync.WaitGroup) {
 			continue
 		}
 		wg.Add(1)
-		go p.handleAdd(wg, req)
+		go p.handle(wg, req)
 	}
 	p.logger.WithFields(log.Fields{"func": "HandlePinRequests"}).Debug("terminating")
 }
 
-func (p *Pinner) handleAdd(wg *sync.WaitGroup, req *queue.PinRequest) {
+// handle will Add or Unpin an object with regards to req.Unpin field.
+func (p *Pinner) handle(wg *sync.WaitGroup, req *queue.PinRequest) {
 	defer wg.Done()
 	defer func() {
 		<-p.rateLimit // primitive throttling
 	}()
 
+	if req.Unpin {
+		p.handleUnpin(req)
+	} else {
+		p.handleAdd(req)
+	}
+}
+
+func (p *Pinner) handleAdd(req *queue.PinRequest) {
 	hash, err := p.Add(req)
 	if err != nil {
 		p.logger.WithFields(
@@ -126,7 +137,7 @@ func (p *Pinner) handleAdd(wg *sync.WaitGroup, req *queue.PinRequest) {
 	}
 	p.logger.WithFields(
 		log.Fields{
-			"hash":    hash,
+			"cid":     hash,
 			"request": fmt.Sprintf("%#v", req),
 		}).Debug("added pin request")
 
@@ -149,9 +160,44 @@ func (p *Pinner) handleAdd(wg *sync.WaitGroup, req *queue.PinRequest) {
 	}
 	p.logger.WithFields(
 		log.Fields{
-			"hash":    hash,
+			"cid":     hash,
 			"request": fmt.Sprintf("%#v", req),
 		}).Info("processed pin request")
+}
+
+func (p *Pinner) handleUnpin(req *queue.PinRequest) {
+	err := p.Unpin(req)
+	if err != nil {
+		p.logger.WithFields(
+			log.Fields{
+				"message": "failed to unpin",
+				"request": fmt.Sprintf("%#v", req),
+			}).Error(err)
+		return
+	}
+
+	stage := model.UploadStageStorage
+	s := &model.Storage{
+		ID:          int64(req.StorageID),
+		UploadStage: &stage,
+		UpdatedAt:   time.Now(),
+		Pinned:      false,
+	}
+
+	if res := p.repo.Model(s).
+		Select("upload_stage", "updated_at", "pinned").
+		Updates(*s); res.Error != nil {
+		p.logger.WithFields(
+			log.Fields{
+				"message": "failed to save",
+				"request": fmt.Sprintf("%#v", req),
+			}).Error(err)
+		return
+	}
+	p.logger.WithFields(
+		log.Fields{
+			"cid": req.CID,
+		}).Info("processed unpin request")
 }
 
 // Add uploads and pins file or directory under pr.Key to IPFS using StorageMessage.
@@ -199,4 +245,23 @@ func (p *Pinner) Add(pr *queue.PinRequest) (string, error) {
 		return "", err
 	}
 	return p.sh.Add(obj)
+}
+
+// Remove unpins file or directory identified by CID
+// so it can be garbage collected in the next GC cycle.
+func (p *Pinner) Unpin(pr *queue.PinRequest) error {
+	if pr.CID == "" {
+		err := errors.New("missing CID")
+		p.logger.WithFields(log.Fields{
+			"request": fmt.Sprintf("%#v", pr),
+			"message": "cannot unpin objects without CID",
+		}).Error(err)
+		return err
+	}
+
+	p.logger.WithFields(log.Fields{
+		"request": fmt.Sprintf("%#v", pr),
+	}).Debug("unpinning object")
+
+	return p.sh.Unpin(pr.CID)
 }

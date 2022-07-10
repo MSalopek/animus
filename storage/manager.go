@@ -432,9 +432,34 @@ func (m *Manager) DownloadFileToDir(ctx context.Context, bucket, dir, fname stri
 	return nil
 }
 
-// RemoveDir deletes dir specified by path.
-func (m *Manager) RemoveDir(path string) error {
-	return os.RemoveAll(path)
+// RemoveDirObjects deletes storage objects specified by rmList.
+func (m *Manager) RemoveDirObjects(ctx context.Context, bucket, dir string) error {
+	objectsCh := make(chan minio.ObjectInfo)
+	var err error
+
+	// Send object names that are needed to be removed to objectsCh
+	go func() {
+		defer close(objectsCh)
+		// List all objects from a bucket-name with a matching prefix.
+		for object := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Prefix: dir, Recursive: true}) {
+			if object.Err != nil {
+				// TODO: handle this!
+				break
+			}
+			objectsCh <- object
+		}
+	}()
+
+	// NOTE: don't know what this does
+	opts := minio.RemoveObjectsOptions{
+		GovernanceBypass: true,
+	}
+
+	// TODO: this only catches the last error
+	for rErr := range m.RemoveObjects(ctx, bucket, objectsCh, opts) {
+		err = rErr.Err
+	}
+	return err
 }
 
 // Basic file information.

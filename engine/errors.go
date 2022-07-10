@@ -39,4 +39,6 @@ var (
 	ErrDirSaveFailed  = &APIError{"directory saving failed"}
 
 	ErrMaxKeyAllocReached = &APIError{"maximum key allocation reached"}
+
+	ErrNoCID = &APIError{"CID is missing"}
 )

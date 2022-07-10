@@ -68,13 +68,13 @@ func (api *ClientAPI) registerHandlers() {
 
 	auth.GET("/storage", api.GetStorageRecords)
 	auth.GET("/storage/id/:id", api.GetStorageRecord)
+	auth.DELETE("/storage/id/:id", api.DeleteStorageRecord)
+	auth.GET("/storage/cid/:cid", api.GetStorageRecordByCid)
+
 	auth.POST("/storage/add-file", api.UploadFile)
 	auth.POST("/storage/add-dir", api.UploadDir)
-
-	// TODO:
-	// auth.POST("/storage/pin/:id", WIPresponder)
-	// auth.POST("/storage/unpin/:id", WIPresponder)
-	// auth.GET("/storage/pin/status/:id/", WIPresponder)
+	auth.POST("/storage/pin/id/:id", api.RequestPin)
+	auth.POST("/storage/unpin/id/:id", api.RequestUnpin)
 }
 
 func (api *ClientAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {

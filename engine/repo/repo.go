@@ -50,7 +50,7 @@ func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]model.Storage, erro
 
 func (rpo *Repo) GetUserUploadByCid(userID int, cid string) (*model.Storage, error) {
 	var s model.Storage
-	res := rpo.Where("user_id = ? AND cid = ?", userID, cid).Limit(1).Find(&s)
+	res := rpo.Where("user_id = ? AND cid = ? AND deleted_at IS NULL", userID, cid).Limit(1).Find(&s)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -59,7 +59,7 @@ func (rpo *Repo) GetUserUploadByCid(userID int, cid string) (*model.Storage, err
 
 func (rpo *Repo) GetUserUploadByID(userID, id int) (*model.Storage, error) {
 	var s model.Storage
-	res := rpo.Where("user_id = ? AND id = ?", userID, id).First(&s)
+	res := rpo.Where("user_id = ? AND id = ? AND deleted_at IS NULL", userID, id).First(&s)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -72,6 +72,12 @@ func (rpo *Repo) CreateStorage(s *model.Storage) error {
 		return res.Error
 	}
 	return nil
+}
+
+func (rpo *Repo) DeleteUserUploadById(userID, id int) error {
+	res := rpo.Where("user_id = ? AND id = ?", userID, id).Delete(&model.Storage{})
+
+	return res.Error
 }
 
 func (rpo *Repo) GetApiClientByKey(key string) (*model.APIClient, error) {

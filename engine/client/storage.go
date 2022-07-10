@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -193,9 +194,188 @@ func (api *ClientAPI) GetStorageRecord(c *gin.Context) {
 	c.JSON(http.StatusOK, storage)
 }
 
+// DeleteStorageRecord will unpin record from IPFS and delete any storage objects.
+func (api *ClientAPI) DeleteStorageRecord(c *gin.Context) {
+	uid := c.GetInt("userID")
+
+	idParam, ok := c.Params.Get("id")
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+
+	storage, err := api.repo.GetUserUploadByID(uid, id)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
+		return
+	} else if err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	if storage.Pinned {
+		if err := api.publishUnpinRequest(storage); err != nil {
+			engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+			return
+		}
+	}
+
+	path := fmt.Sprintf("%d/%s", uid, storage.Name)
+	if err := api.storage.RemoveDirObjects(context.Background(), api.cfg.Bucket, path); err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	if err := api.repo.DeleteUserUploadById(uid, id); err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func (api *ClientAPI) GetStorageRecordByCid(c *gin.Context) {
+	uid := c.GetInt("userID")
+
+	cid, ok := c.Params.Get("cid")
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+
+	storage, err := api.repo.GetUserUploadByCid(uid, cid)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
+		return
+	} else if err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	c.JSON(http.StatusOK, storage)
+}
+
+// Send a pin request if the record is not already pinned.
+// Pinning may be attempted again by adding "forced" query param.
+func (api *ClientAPI) RequestPin(c *gin.Context) {
+	uid := c.GetInt("userID")
+
+	idParam, ok := c.Params.Get("id")
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+
+	// force on any truthy value
+	_, force := c.GetQuery("force")
+
+	storage, err := api.repo.GetUserUploadByID(uid, id)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
+		return
+	} else if err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	if !force && storage.Pinned {
+		c.Status(http.StatusOK)
+		return
+	}
+
+	if err := api.publishPinRequest(storage); err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+// Send an unpin request if the record is pinned.
+// Unpinning may be attempted again by adding "forced" query param.
+// Attempting to unpin a recored without CID will returns "CID is missing" error.
+func (api *ClientAPI) RequestUnpin(c *gin.Context) {
+	uid := c.GetInt("userID")
+
+	idParam, ok := c.Params.Get("id")
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+	id, err := strconv.Atoi(idParam)
+	if !ok {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidQueryParam)
+		return
+	}
+
+	// force on any truthy value
+	_, force := c.GetQuery("force")
+
+	storage, err := api.repo.GetUserUploadByID(uid, id)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
+		return
+	} else if err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	if storage.Cid == nil {
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrNoCID)
+		return
+	}
+
+	if !force && !storage.Pinned {
+		c.Status(http.StatusOK)
+		return
+	}
+
+	if err := api.publishUnpinRequest(storage); err != nil {
+		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
 func (api *ClientAPI) publishPinRequest(m *model.Storage) error {
 	pr := queue.PinRequest{
 		StorageID: int(m.ID),
+		Key:       *m.StorageKey,
+		Dir:       m.Dir,
+		Source:    queue.SourceClient,
+	}
+	body, err := json.Marshal(pr)
+	if err != nil {
+		return err
+	}
+
+	err = api.publisher.Publish(api.cfg.NsqTopic, body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (api *ClientAPI) publishUnpinRequest(m *model.Storage) error {
+	if m.Cid == nil {
+		return engine.ErrNoCID
+	}
+
+	pr := queue.PinRequest{
+		StorageID: int(m.ID),
+		CID:       *m.Cid,
+		Unpin:     true,
 		Key:       *m.StorageKey,
 		Dir:       m.Dir,
 		Source:    queue.SourceClient,
