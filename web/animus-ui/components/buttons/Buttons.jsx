@@ -16,13 +16,14 @@ function ModalBtn({ Icon, title, action }) {
   );
 }
 
-function RoundActionBtn({ Icon, onClick }) {
+function RoundActionBtn({ Icon, onClick, padding }) {
+  const p = padding ? `p-${padding}` : "p-2"
   return (
     <button
-      className="rounded-full border p-2 bg-gray-50 border-gray-200"
+      className={`${p} rounded-full border bg-gray-50 border-gray-200"`}
       onClick={() => onClick()}
     >
-      {Icon && <Icon className="w-6 h-6" />}
+      {Icon && <Icon className="w-5 h-5" />}
     </button>
   );
 }

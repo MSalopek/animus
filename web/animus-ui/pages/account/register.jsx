@@ -1,3 +1,6 @@
+import { unstable_getServerSession } from 'next-auth/next';
+import { authOptions } from '../api/auth/[...nextauth]';
+
 import Link from "next/link";
 
 export default Register;
@@ -94,4 +97,32 @@ function Register() {
       </div>
     </div>
   );
+}
+
+export async function getServerSideProps(context) {
+  const session = await unstable_getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  );
+
+  if (session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  // const resSpiritus = await GetSpiritusBySlug(slug);
+  // const spiritus = resSpiritus.data;
+
+  // const stories = resStories.data?.content;
+
+  return {
+    props: {
+      session,
+    },
+  };
 }

@@ -15,10 +15,11 @@ import DirectoryUploadModal from '../modals/DirectoryUploadModal';
 
 export default StorageView;
 
-function StorageView() {
+function StorageView({ rows, total, pages }) {
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDirModalOpen, setIsDirModalOpen] = useState(false);
 
+  console.log('## rows', rows, total, pages);
   return (
     <section className="bg-white dark:bg-gray-900">
       <FileUploadModal
@@ -52,35 +53,63 @@ function StorageView() {
           </BtnContainer>
         </div>
 
-        <div className="mt-4 space-y-4 lg:mt-8 border p-4 rounded-lg">
-          <StorageRow />
-        </div>
+        {rows && (
+          <div className="mt-4 space-y-4 lg:mt-8 border p-4 rounded-lg">
+            {rows.map((r) => (
+              <StorageRow
+                key={r.name}
+                id={r.id}
+                cid={r.cid}
+                dir={r.dir}
+                name={r.name}
+                isPublic={r.public}
+                meta={r.meta}
+                stage={r.stage}
+                pinned={r.pinned}
+                created_at={r.created_at}
+              />
+            ))}
+          </div>
+        )}
       </div>
-      <Pagination />
+      <Pagination total={total} />
     </section>
   );
 }
 
-function StorageRow() {
+function StorageRow({
+  id,
+  cid,
+  dir,
+  name,
+  isPublic,
+  meta,
+  stage,
+  pinned,
+  created_at,
+}) {
   const [expanded, setExpanded] = useState(false);
 
   return (
     <div className="py-2 px-8 bg-gray-100 rounded-lg dark:bg-gray-800">
-      <div className="flex items-center justify-between w-full">
-        <h1 className="font-semibold text-lg text-gray-700 dark:text-white">
-          Filename.txt
-          <span className="text-sm px-2 text-gray-400">(11.12.2022)</span>
-        </h1>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-row">
+          <div clasName="text-gray-700 dark:text-white">
+            <span className="text-sm text-gray-400">Name:</span>
+            <h1 className="font-semibold w-56 lg:w-80">{name}</h1>
+          </div>
 
-        <div className="flex items-center text-gray-700 dark:text-white">
-          <span className="pr-2">
-            QmVaTLF6H23B7tno8REwSFxT8J21aWEnaSTpTzNM6sRi6b
-          </span>
-          <CopyToClipboard
-            text={'QmVaTLF6H23B7tno8REwSFxT8J21aWEnaSTpTzNM6sRi6b'}
-          >
-            <RoundActionBtn Icon={DuplicateIcon} />
-          </CopyToClipboard>
+          <div clasName="text-gray-700 dark:text-white">
+            <span className="text-sm text-gray-400">CID:</span>
+            <div className="flex items-center text-gray-700 dark:text-white">
+              <h1 className="pr-2">{cid || 'N/A'}</h1>
+              {cid && (
+                <CopyToClipboard text={cid || ''}>
+                  <DuplicateIcon className="w-5 h-5" />
+                </CopyToClipboard>
+              )}
+            </div>
+          </div>
         </div>
 
         <BtnContainer>
@@ -94,31 +123,53 @@ function StorageRow() {
       </div>
       {expanded && (
         <StorageMeta
-          isPinned={true}
-          isPublic={false}
-          metaData="{ad;fkasdf;klams;dfklma;sdlkfma;slkdmfa;skdmf;alskdmf;alskmdf;alksmd;flaksmd;flkams;dlkfma;slkdmf;alksdmf;alskmdf;alksmdf}"
+          isPinned={pinned}
+          isPublic={isPublic}
+          metaData={meta}
+          location={stage}
+          created_at={created_at}
         />
       )}
     </div>
   );
 }
 
-function StorageMeta({ metaData, isPinned, isPublic }) {
+function StorageMeta({
+  metaData,
+  dir,
+  isPinned,
+  isPublic,
+  location,
+  created_at,
+}) {
   return (
-    <div className="grid grid-cols-2 w-3/4 pb-4">
-      <p className="text-gray-500 py-1">
+    <div className="grid grid-cols-2 w-1/2 py-2">
+      <p className="text-gray-500 py-0.5">
+        <span className="font-semibold pr-2">Created:</span>
+        {new Date(created_at).toISOString().split('T')[0]}
+      </p>
+      <p className="text-gray-500 py-0.5">
+        <span className="font-semibold pr-2">Directory:</span>
+        {dir ? 'true' : 'false'}
+      </p>
+
+      <p className="text-gray-500 py-0.5">
         <span className="font-semibold pr-2">Pinned:</span>
         {isPinned ? 'true' : 'false'}
       </p>
-      <p className="text-gray-500 py-1">
+      <p className="text-gray-500 py-0.5">
         <span className="font-semibold pr-2">Public: </span>
         {isPublic ? 'true' : 'false'}
       </p>
-      <p className="text-gray-500 py-1 col-span-2">
+      <p className="text-gray-500 py-0.5">
+        <span className="font-semibold pr-2">Location:</span>
+        {location ? location : 'N/A'}
+      </p>
+      {/* <p className="text-gray-500 py-0.5 col-span-2">
         <span className="font-semibold pr-2">Metadata:</span>
         <br></br>
-        {metaData ? metaData : 'N/A'}
-      </p>
+        {metaData ? JSON.stringify(metaData) : 'N/A'}
+      </p> */}
     </div>
   );
 }

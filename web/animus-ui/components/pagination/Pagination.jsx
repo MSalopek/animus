@@ -1,6 +1,6 @@
 export default Pagination;
 
-function Pagination() {
+function Pagination({ currentPage, shown, total }) {
   return (
     <div className="w-full bg-white dark:bg-gray-800">
       <div className="container flex flex-col items-center px-6 py-5 mx-auto space-y-6 sm:flex-row sm:justify-between sm:space-y-0 ">
@@ -27,12 +27,7 @@ function Pagination() {
           </a>
         </div>
 
-        <div className="text-gray-500 dark:text-gray-400">
-          <span className="font-medium text-gray-700 dark:text-gray-100">
-            1 - 25
-          </span>{" "}
-          of 77 records
-        </div>
+        <div className="text-gray-500 dark:text-gray-400">Total: {total} records</div>
       </div>
     </div>
   );

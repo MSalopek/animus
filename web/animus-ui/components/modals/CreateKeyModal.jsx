@@ -11,8 +11,9 @@ import { MAXSIZE, MEGABYTE } from '../../util/constants';
 
 import { UploadFile } from '../../service/http';
 import { Alert } from '../alert/Alert';
+import { formatWithCursor } from 'prettier';
 
-export default function FileUploadModal({ isOpen, setIsOpen }) {
+export default function CreateKeyModal({ isOpen, setIsOpen }) {
   return (
     <Dialog
       open={isOpen}
@@ -31,35 +32,7 @@ function UploadFileBox({ setIsOpen }) {
   const [errMessage, setErrMessage] = useState('');
   const [disabled, setDisabled] = useState(true);
 
-  const onDropRejected  = useCallback((fileRejections) => {
-    if (fileRejections.length) {
-      setDisabled(true);
-      setErrMessage(
-        `${
-          fileRejections[0].file.name
-        } rejected - ${fileRejections[0].errors[0].code.replaceAll('-', ' ')}`
-      );
-      return;
-    }
-  }, []);
-
-  const onDropAccepted  = useCallback((acceptedFiles) => {
-    if (acceptedFiles.length) {
-      setDisabled(false);
-      return;
-    }
-  }, []);
-
-
-  const { getRootProps, getInputProps, acceptedFiles, fileRejections } =
-    useDropzone({ multiple: false, minSize: 0, maxSize: MAXSIZE, onDropRejected, onDropAccepted });
-
-  const upload = async () => {
-    if (acceptedFiles.length < 1) {
-      setDisabled(true);
-      setErrMessage("No files provided.")
-      return
-    }
+  const createKey = async () => {
     await UploadFile(acceptedFiles[0])
     .catch(error => {
       setDisabled(true);
