@@ -78,7 +78,7 @@ func (api *UserAPI) Login(c *gin.Context) {
 		return
 	}
 
-	if len(creds.Email) < 1 || len(creds.Password) < 1 {
+	if len(creds.Email) < 1 || len(creds.Password) < 8 {
 		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidCredentials)
 		return
 	}
@@ -86,6 +86,7 @@ func (api *UserAPI) Login(c *gin.Context) {
 	user, err := api.repo.GetUserByEmail(creds.Email)
 	if err == gorm.ErrRecordNotFound {
 		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
+		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(creds.Password)); err != nil {
