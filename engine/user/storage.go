@@ -132,13 +132,22 @@ func (api *UserAPI) GetUserUploads(c *gin.Context) {
 	uid := c.GetInt("userID")
 
 	ctx := repo.QueryCtxFromGin(c)
-	storage, err := api.repo.GetUserUploads(ctx, uid)
+	rows, err := api.repo.GetCountedUserUploads(ctx, uid)
 	if err != nil {
 		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
 		return
 	}
 
-	c.JSON(http.StatusOK, storage)
+	resp := engine.GetStorageResponse{
+		Returned: len(rows),
+		Rows:     rows,
+	}
+	// total record count is the same for each returned record
+	if len(rows) > 0 {
+		resp.Total = rows[0].TotalRows
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (api *UserAPI) GetStorageRecord(c *gin.Context) {

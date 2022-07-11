@@ -55,6 +55,19 @@ type Storage struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
+// CountedStorage is Storage with count column added.
+// count is usefull in pagination; it is faster to return
+// the count than it is to make 2 separate queries to fetch and count data.
+type CountedStorage struct {
+	Storage
+	TotalRows int `json:"-"`
+}
+
+// ToStorage returns the underlying Storage record from CountedStorage.
+func (cs *CountedStorage) ToStorage() *Storage {
+	return &cs.Storage
+}
+
 func (Storage) TableName() string {
 	return "storage"
 }

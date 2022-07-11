@@ -2,6 +2,8 @@ package engine
 
 import (
 	"time"
+
+	"github.com/msalopek/animus/model"
 )
 
 type CreateKeyResponse struct {
@@ -21,4 +23,10 @@ type CreateKeyResponse struct {
 type UpdateKeyRequest struct {
 	Rights   *string `json:"rights,omitempty"`
 	Disabled *bool   `json:"disabled,omitempty"`
+}
+
+type GetStorageResponse struct {
+	Total    int                     `json:"total"`
+	Returned int                     `json:"returned"`
+	Rows     []*model.CountedStorage `json:"rows"`
 }

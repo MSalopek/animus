@@ -7,6 +7,42 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+const rawASCStorage = `WITH user_storage AS (
+	SELECT *
+	FROM  storage
+	WHERE
+	user_id = ?
+	AND deleted_at IS NULL
+)
+SELECT *
+FROM  (
+	TABLE user_storage
+	ORDER BY id ASC
+	LIMIT ?
+	OFFSET ?
+) sub
+RIGHT JOIN (
+	SELECT count(*) FROM user_storage
+) AS c (total_rows) ON true`
+
+const rawDESCStorage = `WITH user_storage AS (
+	SELECT *
+	FROM  storage
+	WHERE
+	user_id = ?
+	AND deleted_at IS NULL
+)
+SELECT *
+FROM  (
+	TABLE user_storage
+	ORDER BY id DESC
+	LIMIT ?
+	OFFSET ?
+) sub
+RIGHT JOIN (
+	SELECT count(*) FROM user_storage
+) AS c (total_rows) ON true`
+
 type Repo struct {
 	*gorm.DB
 }
@@ -24,8 +60,8 @@ func (rpo *Repo) GetUserByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
-func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]model.Storage, error) {
-	var s []model.Storage
+func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]*model.Storage, error) {
+	var s []*model.Storage
 	q := rpo.Where("user_id = ? AND deleted_at IS NULL", userID).
 		Limit(ctx.Limit).
 		Offset(ctx.Offset)
@@ -41,6 +77,23 @@ func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]model.Storage, erro
 				Desc:   !ctx.Asc,
 			})
 	}
+	res := q.Find(&s)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return s, nil
+}
+
+// GetCountedUserUploads returns storage rows with total row count attached to each row.
+// TODO: work out how to do keeping row counts in a smarter way.
+func (rpo *Repo) GetCountedUserUploads(ctx QueryCtx, userID int) ([]*model.CountedStorage, error) {
+	var s []*model.CountedStorage
+
+	q := rpo.Raw(rawDESCStorage, userID, ctx.Limit, ctx.Offset)
+	if ctx.Asc {
+		q = rpo.Raw(rawASCStorage, userID, ctx.Limit, ctx.Offset)
+	}
+
 	res := q.Find(&s)
 	if res.Error != nil {
 		return nil, res.Error

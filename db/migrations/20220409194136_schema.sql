@@ -89,7 +89,8 @@ CREATE TRIGGER storage_soft_delete
   FOR EACH ROW EXECUTE PROCEDURE pg_soft_delete();
 
 CREATE INDEX storage_dirs_idx ON storage(dir);
-CREATE INDEX storage_user_cid_idx ON storage(user_id, cid);
+CREATE INDEX storage_user_id_idx ON storage(user_id);
+CREATE INDEX storage_cid_idx ON storage(cid);
 
 CREATE TABLE gateways (
 	id BIGSERIAL PRIMARY KEY,
