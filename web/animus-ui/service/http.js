@@ -1,10 +1,9 @@
 import axios from 'axios';
 // import { ApiError } from "next/dist/server/api-utils";
-// import { getToken, setToken } from './util';
 
 export const API_URL = process.env.NEXT_API_URL;
 
-const defaultLimit = 25;
+const defaultLimit = 10;
 const defaultOffset = 0;
 
 const API = axios.create({
@@ -23,13 +22,14 @@ export async function GetUserStorage(token, limit, offset) {
   });
 }
 
-export async function UploadFile(file) {
+export async function UploadFile(token, file) {
   const formData = new FormData();
   formData.append('file', file, file.name);
   return API({
     method: 'post',
-    url: `${API_URL}/auth/user/storage/add-file`,
+    url: "auth/user/storage/add-file",
     headers: {
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'multipart/form-data',
     },
     data: formData,

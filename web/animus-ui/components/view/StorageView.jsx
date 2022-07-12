@@ -1,29 +1,40 @@
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { DocumentAddIcon, FolderAddIcon } from '@heroicons/react/solid';
 import {
+  DownloadIcon,
+  DuplicateIcon,
   TrashIcon,
   InformationCircleIcon,
   // ArrowsExpandIcon,
-  DuplicateIcon,
 } from '@heroicons/react/outline';
 
 import { ModalBtn, BtnContainer, RoundActionBtn } from '../buttons/Buttons';
 import Pagination from '../pagination/Pagination';
 import FileUploadModal from '../modals/FileUploadModal';
 import DirectoryUploadModal from '../modals/DirectoryUploadModal';
+import { UploadFile } from '../../service/http';
 
 export default StorageView;
 
 function StorageView({ rows, total, pages }) {
+  const { data: session, status } = useSession();
+
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDirModalOpen, setIsDirModalOpen] = useState(false);
+
+  const uploadFile = async(file) => {
+    return await UploadFile(session.user.accessToken, file)
+  }
 
   return (
     <section className="bg-white dark:bg-gray-900">
       <FileUploadModal
         isOpen={isFileModalOpen}
         setIsOpen={setIsFileModalOpen}
+        uploadFunc={uploadFile}
       />
       <DirectoryUploadModal
         isOpen={isDirModalOpen}
@@ -53,7 +64,7 @@ function StorageView({ rows, total, pages }) {
         </div>
 
         {rows && (
-          <div className="mt-4 space-y-4 lg:mt-8 border p-4 rounded-lg">
+          <div className="space-y-2 lg:mt-8 border p-4 rounded-lg">
             {rows.map((r) => (
               <StorageRow
                 key={r.name}
@@ -90,10 +101,9 @@ function StorageRow({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="py-2 px-8 bg-gray-100 rounded-lg dark:bg-gray-800">
+    <div className="py-1 px-8 bg-gray-100 rounded-lg dark:bg-gray-800">
       <div className="flex items-center justify-between">
         <div className="grid grid-cols-2 w-3/4">
-
           <div className="text-gray-700 dark:text-white">
             <span className="text-sm text-gray-400">Name:</span>
             <h1 className="font-semibold">{name}</h1>
@@ -113,6 +123,7 @@ function StorageRow({
         </div>
 
         <BtnContainer>
+          <RoundActionBtn Icon={DownloadIcon}></RoundActionBtn>
           <RoundActionBtn
             Icon={InformationCircleIcon}
             onClick={() => setExpanded(!expanded)}

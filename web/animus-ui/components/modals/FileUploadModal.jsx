@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import Router from 'next/router'
+
 import { useDropzone } from 'react-dropzone';
 import { Dialog } from '@headlessui/react';
 import {
@@ -9,10 +11,9 @@ import {
 } from '@heroicons/react/outline';
 import { MAXSIZE, MEGABYTE } from '../../util/constants';
 
-import { UploadFile } from '../../service/http';
 import { Alert } from '../alert/Alert';
 
-export default function FileUploadModal({ isOpen, setIsOpen }) {
+export default function FileUploadModal({ isOpen, setIsOpen, uploadFunc }) {
   return (
     <Dialog
       open={isOpen}
@@ -21,17 +22,17 @@ export default function FileUploadModal({ isOpen, setIsOpen }) {
     >
       <div className="flex flex-col items-center mt-60 h-screen">
         <Dialog.Overlay className="fixed inset-0 bg-black opacity-50" />
-        <UploadFileBox setIsOpen={setIsOpen} />
+        <UploadFileBox setIsOpen={setIsOpen} uploadFunc={uploadFunc} />
       </div>
     </Dialog>
   );
 }
 
-function UploadFileBox({ setIsOpen }) {
+function UploadFileBox({ setIsOpen, uploadFunc }) {
   const [errMessage, setErrMessage] = useState('');
   const [disabled, setDisabled] = useState(true);
 
-  const onDropRejected  = useCallback((fileRejections) => {
+  const onDropRejected = useCallback((fileRejections) => {
     if (fileRejections.length) {
       setDisabled(true);
       setErrMessage(
@@ -43,38 +44,45 @@ function UploadFileBox({ setIsOpen }) {
     }
   }, []);
 
-  const onDropAccepted  = useCallback((acceptedFiles) => {
+  const onDropAccepted = useCallback((acceptedFiles) => {
     if (acceptedFiles.length) {
       setDisabled(false);
       return;
     }
   }, []);
 
-
   const { getRootProps, getInputProps, acceptedFiles, fileRejections } =
-    useDropzone({ multiple: false, minSize: 0, maxSize: MAXSIZE, onDropRejected, onDropAccepted });
+    useDropzone({
+      multiple: false,
+      minSize: 0,
+      maxSize: MAXSIZE,
+      onDropRejected,
+      onDropAccepted,
+    });
 
   const upload = async () => {
+    setDisabled(true);
     if (acceptedFiles.length < 1) {
-      setDisabled(true);
-      setErrMessage("No files provided.")
-      return
+      setErrMessage('No files provided.');
+      return;
     }
-    await UploadFile(acceptedFiles[0])
-    .catch(error => {
+    try {
+      const res = await uploadFunc(acceptedFiles[0]);
       setDisabled(true);
-      if (error.response) {
-        // The request was made and server responded with error code
-        setErrMessage(`Error uploading file: ${error.message}`)
-      } else if (error.request) {
-        setErrMessage(`Error sending request. ${error.message}`)
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        setErrMessage('Aborted! Error preparing request.', error, "JE<bOTE");
-        console.log(error)
+      if (res.status !== 201) {
+        setErrMessage('Something went wrong.');
+        return;
       }
-    });
+      Router.reload(window.location.pathname)
+
+    } catch (error) {
+      // The request was made and server responded with error code
+      setErrMessage(
+        `Error ${error.response.status}: ${error.response.data.error}`
+      );
+      console.log(error);
     }
+  };
 
   const clearErrMessage = () => {
     setErrMessage(null);
