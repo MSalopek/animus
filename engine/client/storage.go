@@ -15,6 +15,7 @@ import (
 	"github.com/msalopek/animus/model"
 	"github.com/msalopek/animus/queue"
 	"github.com/msalopek/animus/storage"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -70,10 +71,17 @@ func (api *ClientAPI) UploadFile(c *gin.Context) {
 		return
 	}
 
+	// NOTE: the file is on s3 and can be manually pinned on error
 	if err := api.publishPinRequest(storage); err != nil {
-		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
-		return
+		api.logger.WithFields(log.Fields{
+			"error":     err.Error(),
+			"storageID": storage.ID,
+			"bucket":    storage.StorageBucket,
+			"key":       storage.StorageKey,
+			"dir":       storage.Dir,
+		}).Error("could not publish pin request")
 	}
+
 	c.JSON(http.StatusCreated, storage)
 }
 
@@ -147,9 +155,15 @@ func (api *ClientAPI) UploadDir(c *gin.Context) {
 		return
 	}
 
+	// NOTE: the file is on s3 and can be manually pinned on error
 	if err := api.publishPinRequest(storage); err != nil {
-		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrInternalError)
-		return
+		api.logger.WithFields(log.Fields{
+			"error":     err.Error(),
+			"storageID": storage.ID,
+			"bucket":    storage.StorageBucket,
+			"key":       storage.StorageKey,
+			"dir":       storage.Dir,
+		}).Error("could not publish pin request")
 	}
 
 	c.JSON(http.StatusCreated, storage)
