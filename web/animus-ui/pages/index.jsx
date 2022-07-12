@@ -50,7 +50,7 @@ export async function getServerSideProps(context) {
     console.log("error getting Storage props", error);
     return {
       props: {
-        total: 1,
+        total: 0,
         pages: 1,
         rows: [],
       },

@@ -1,11 +1,7 @@
 import { useState } from 'react';
-import { useDropzone } from 'react-dropzone';
 import { Dialog } from '@headlessui/react';
 import {
-  FolderIcon,
-  CheckIcon,
   DuplicateIcon,
-  XIcon,
   EyeIcon,
   EyeOffIcon,
 } from '@heroicons/react/outline';

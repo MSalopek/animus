@@ -36,6 +36,34 @@ export async function UploadFile(token, file) {
   });
 }
 
+export async function UploadDirectory(token, files, dirname) {
+  const formData = new FormData();
+  formData.append("name", dirname)
+  files.forEach(f => {
+    formData.append('files', f, f.name);
+  })
+  
+  return API({
+    method: 'post',
+    url: "auth/user/storage/add-dir",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+    data: formData,
+  });
+}
+
+export async function DeleteStorage(token, id) {
+  return API({
+    method: 'delete',
+    url: `/auth/user/storage/id/${id}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
 export async function CreateKey(token) {
   return await API({
     method: 'post',

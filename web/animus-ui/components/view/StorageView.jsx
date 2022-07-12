@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Router from 'next/router';
 import { useSession } from 'next-auth/react';
 
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -8,18 +9,18 @@ import {
   DuplicateIcon,
   TrashIcon,
   InformationCircleIcon,
-  // ArrowsExpandIcon,
 } from '@heroicons/react/outline';
 
 import { ModalBtn, BtnContainer, RoundActionBtn } from '../buttons/Buttons';
 import Pagination from '../pagination/Pagination';
 import FileUploadModal from '../modals/FileUploadModal';
 import DirectoryUploadModal from '../modals/DirectoryUploadModal';
-import { UploadFile } from '../../service/http';
+import { DeleteStorage, UploadDirectory, UploadFile } from '../../service/http';
 
 export default StorageView;
 
 function StorageView({ rows, total, pages }) {
+
   const { data: session, status } = useSession();
 
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
@@ -27,6 +28,15 @@ function StorageView({ rows, total, pages }) {
 
   const uploadFile = async(file) => {
     return await UploadFile(session.user.accessToken, file)
+  }
+
+  const uploadDir = async (files, dirname) => {
+    return await UploadDirectory(session.user.accessToken, files, dirname)
+  }
+
+  const deleteRow = async (id) => {
+    await DeleteStorage(session.user.accessToken, id)
+    Router.reload(window.location.pathname);
   }
 
   return (
@@ -39,6 +49,7 @@ function StorageView({ rows, total, pages }) {
       <DirectoryUploadModal
         isOpen={isDirModalOpen}
         setIsOpen={setIsDirModalOpen}
+        uploadFunc={uploadDir}
       />
       <div className="container px-6 py-12 mx-auto">
         <div className="flex flex-col">
@@ -55,7 +66,7 @@ function StorageView({ rows, total, pages }) {
             />
             <ModalBtn
               Icon={FolderAddIcon}
-              title={'Add Directory'}
+              title={'Add Folder'}
               action={() => {
                 setIsDirModalOpen(true);
               }}
@@ -77,6 +88,7 @@ function StorageView({ rows, total, pages }) {
                 stage={r.stage}
                 pinned={r.pinned}
                 created_at={r.created_at}
+                deleteFunc={deleteRow}
               />
             ))}
           </div>
@@ -97,6 +109,7 @@ function StorageRow({
   stage,
   pinned,
   created_at,
+  deleteFunc
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -128,7 +141,7 @@ function StorageRow({
             Icon={InformationCircleIcon}
             onClick={() => setExpanded(!expanded)}
           />
-          <RoundActionBtn Icon={TrashIcon} />
+          <RoundActionBtn Icon={TrashIcon} onClick={() => deleteFunc(id)}/>
           {/* <RoundActionBtn Icon={ArrowsExpandIcon} /> */}
         </BtnContainer>
       </div>

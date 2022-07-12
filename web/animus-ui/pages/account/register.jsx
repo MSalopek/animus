@@ -11,7 +11,7 @@ function Register() {
       <div className="w-full max-w-lg mx-auto overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800">
         <div className="px-6 py-4">
           <h2 className="text-3xl font-bold text-center text-gray-700 dark:text-white">
-            Animus UI
+            Animus Store
           </h2>
 
           <h2 className="text-lg font-semibold text-gray-700 capitalize text-center my-6 dark:text-white">

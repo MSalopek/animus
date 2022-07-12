@@ -13,7 +13,7 @@ export default function Footer() {
                     href="#"
                     className="text-xl font-bold text-gray-800 dark:text-white hover:text-gray-700 dark:hover:text-gray-300"
                   >
-                    Animus UI
+                    Animus Store
                   </a>
                 </Link>
               </div>
