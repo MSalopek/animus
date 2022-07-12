@@ -1,6 +1,6 @@
 auth_secret: "animus_password_SECRET_VERY_Gewd"
 auth_authority: "AnimusEngine"
-auth_expiration_hours: 1
+auth_expiration_hours: 24
 cors_origins:
     - "http://localhost:3000"
 

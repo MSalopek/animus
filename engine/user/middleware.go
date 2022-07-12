@@ -22,6 +22,7 @@ func handleCORS(allowedOrigins []string) gin.HandlerFunc {
 			"GET",
 			"PUT",
 			"POST",
+			"PATCH",
 			"DELETE",
 			"OPTIONS",
 		},
