@@ -33,8 +33,6 @@ func handleCORS(allowedOrigins []string) gin.HandlerFunc {
 			"Accept-Encoding",
 			"X-CSRF-Token",
 			"X-Requested-With",
-			"X-API-KEY",
-			"X-API-SIG",
 			"Origin",
 		},
 		ExposeHeaders:    []string{"Content-Length"},
