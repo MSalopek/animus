@@ -12,18 +12,6 @@ const API = axios.create({
   headers: { 'Content-type': 'application/json' },
 });
 
-// API.interceptors.request.use(
-//   (request) => {
-//     const token = getToken();
-//     const auth = token ? `Bearer ${token}` : '';
-//     request.headers.common['Authorization'] = auth;
-//     return request;
-//   },
-//   (error) => {
-//     Promise.reject(error);
-//   }
-// );
-
 export async function GetUserStorage(token, limit, offset) {
   const o = offset ? offset : defaultOffset;
   const l = limit ? limit : defaultLimit;
@@ -48,47 +36,54 @@ export async function UploadFile(file) {
   });
 }
 
-export async function CreateKey() {
-  const formData = new FormData();
-  formData.append('file', file, file.name);
-  return API({
+export async function CreateKey(token) {
+  return await API({
     method: 'post',
-    url: `${API_URL}/auth/user/keys`,
+    url: '/auth/user/keys',
     headers: {
-      'Content-Type': 'multipart/form-data',
+      Authorization: `Bearer ${token}`,
     },
-    data: formData,
   });
 }
 
-export async function GetKeys() {
-  return API({
-    method: 'get',
-    url: `${API_URL}/auth/user/keys`,
+export async function GetKeys(token) {
+  return API.get('/auth/user/keys', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 }
 
-export async function DeleteKey(id) {
+export async function DeleteKey(token, id) {
   return API({
     method: 'delete',
-    url: `${API_URL}/auth/user/keys/id/${id}`,
+    url: `/auth/user/keys/id/${id}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 }
 
-export async function DisableKey(id) {
-  return API({
+export async function DisableKey(token, id) {
+  return await API({
     method: 'patch',
-    url: `${API_URL}/auth/user/keys/id/${id}`,
+    url: `/auth/user/keys/id/${id}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     data: {
       disabled: true,
     },
   });
 }
 
-export async function EnableKey(id) {
-  return API({
+export async function EnableKey(token, id) {
+  return await API({
     method: 'patch',
-    url: `${API_URL}/auth/user/keys/id/${id}`,
+    url: `/auth/user/keys/id/${id}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     data: {
       disabled: false,
     },

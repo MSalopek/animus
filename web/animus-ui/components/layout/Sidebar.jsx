@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Menu } from '@headlessui/react';
 
+import { signOut } from "next-auth/react"
+
 export default function Sidebar() {
   return (
     <aside className="h-screen sticky top-0 flex flex-col items-center w-60 text-gray-400 bg-gray-900">
@@ -358,6 +360,7 @@ function AccountMenu() {
                   className={`${
                     active ? 'bg-blue-500 text-white' : 'text-gray-900'
                   } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                  onClick={() => signOut()}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

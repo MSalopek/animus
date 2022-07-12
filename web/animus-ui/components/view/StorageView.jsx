@@ -19,7 +19,6 @@ function StorageView({ rows, total, pages }) {
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDirModalOpen, setIsDirModalOpen] = useState(false);
 
-  console.log('## rows', rows, total, pages);
   return (
     <section className="bg-white dark:bg-gray-900">
       <FileUploadModal
@@ -93,10 +92,11 @@ function StorageRow({
   return (
     <div className="py-2 px-8 bg-gray-100 rounded-lg dark:bg-gray-800">
       <div className="flex items-center justify-between">
-        <div className="flex flex-row">
-          <div clasName="text-gray-700 dark:text-white">
+        <div className="grid grid-cols-2 w-3/4">
+
+          <div className="text-gray-700 dark:text-white">
             <span className="text-sm text-gray-400">Name:</span>
-            <h1 className="font-semibold w-56 lg:w-80">{name}</h1>
+            <h1 className="font-semibold">{name}</h1>
           </div>
 
           <div clasName="text-gray-700 dark:text-white">

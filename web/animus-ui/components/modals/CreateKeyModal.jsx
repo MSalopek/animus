@@ -1,19 +1,26 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Dialog } from '@headlessui/react';
 import {
-  CloudUploadIcon,
   FolderIcon,
   CheckIcon,
+  DuplicateIcon,
   XIcon,
+  EyeIcon,
+  EyeOffIcon,
 } from '@heroicons/react/outline';
-import { MAXSIZE, MEGABYTE } from '../../util/constants';
 
-import { UploadFile } from '../../service/http';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+
 import { Alert } from '../alert/Alert';
-import { formatWithCursor } from 'prettier';
 
-export default function CreateKeyModal({ isOpen, setIsOpen }) {
+export default function CreateKeyModal({
+  isOpen,
+  setIsOpen,
+  currentKeys,
+  setCurrentKeys,
+  createFunc,
+}) {
   return (
     <Dialog
       open={isOpen}
@@ -22,86 +29,116 @@ export default function CreateKeyModal({ isOpen, setIsOpen }) {
     >
       <div className="flex flex-col items-center mt-60 h-screen">
         <Dialog.Overlay className="fixed inset-0 bg-black opacity-50" />
-        <UploadFileBox setIsOpen={setIsOpen} />
+        <AddKeyBox
+          setIsOpen={setIsOpen}
+          currentKeys={currentKeys}
+          setCurrentKeys={setCurrentKeys}
+          createFunc={createFunc}
+        />
       </div>
     </Dialog>
   );
 }
 
-function UploadFileBox({ setIsOpen }) {
+function AddKeyBox({ setIsOpen, currentKeys, setCurrentKeys, createFunc }) {
   const [errMessage, setErrMessage] = useState('');
-  const [disabled, setDisabled] = useState(true);
+  const [disabled, setDisabled] = useState(false);
 
-  const createKey = async () => {
-    await UploadFile(acceptedFiles[0])
-    .catch(error => {
-      setDisabled(true);
-      if (error.response) {
-        // The request was made and server responded with error code
-        setErrMessage(`Error uploading file: ${error.message}`)
-      } else if (error.request) {
-        setErrMessage(`Error sending request. ${error.message}`)
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        setErrMessage('Aborted! Error preparing request.', error, "JE<bOTE");
-        console.log(error)
+  const [key, setKey] = useState('');
+  const [secret, setSecret] = useState('');
+  const [hidden, setHidden] = useState(true);
+
+  const create = async () => {
+    setDisabled(true);
+    try {
+      const res = await createFunc();
+      if (res.status !== 201) {
+        setErrMessage('Something went wrong.');
+        return;
       }
-    });
+
+      if (res.data) {
+        setKey(res.data.client_key);
+        setSecret(res.data.client_secret);
+        // update existing key list
+        const newKeys = [...currentKeys];
+        newKeys.push(res.data);
+        setCurrentKeys(newKeys.sort((a, b) => a.disabled - b.disabled));
+      }
+    } catch (error) {
+      if (error.response.status === 400) {
+        // show server response error to user
+        setErrMessage(
+          error.response.data?.error
+            ? `Cannot create key: ${error.response.data?.error}`
+            : 'Something went wrong.'
+        );
+        return;
+      }
+      setErrMessage('Something went wrong.');
     }
+  };
 
   const clearErrMessage = () => {
     setErrMessage(null);
   };
 
-  const acceptedList = (
-    <ul className="flex flex-col list-group my-1 mx-4">
-      {acceptedFiles.map((af) => (
-        <li className="list-group-item list-group-item-success inline-flex">
-          <CheckIcon className="w-6 h-6 text-green-300" />
-          <span className="text-gray-600 text-sm">{af.name}</span>
-          <span className="text-gray-400 text-sm pl-2">{`(${(
-            af.size / MEGABYTE
-          ).toPrecision(3)} MB)`}</span>
-        </li>
-      ))}
-    </ul>
-  );
-
   return (
     <div className="shadow-lg relative flex flex-col w-1/3 bg-white bg-clip-padding rounded-md outline-none text-current p-2">
       {errMessage && <Alert message={errMessage} onClick={clearErrMessage} />}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h5 className="text-xl font-medium leading-normal text-gray-800">
-          Upload a File to IPFS
+      <div className="p-4">
+        <h5 className="text-2xl font-medium leading-normal text-gray-800 border-b border-gray-200">
+          New API Key
         </h5>
-        <p className="text-sm text-gray-400">{'(max. 25 MB)'}</p>
+        <p className="font-bold text-red-600 py-2">Important Notes</p>
+        <p className="text-gray-400 py-2">
+          Your API Key Secret will be displayed only once. <br></br>The Secret
+          cannot be retrieved after you close this window.<br></br> If you lose
+          your Secret you should delete the API Key and create a new one.
+          <br></br>
+          <br></br>
+          Click Create to create a new API Key.
+        </p>
+        <p className="text-gray-500 font-bold py-2">
+          API Keys allow access to your data - please keep them stored securely
+          to prevent unauthorized access.
+        </p>
       </div>
 
-      <div className="py-2 px-3 bg-white" {...getRootProps()}>
-        <div className="rounded-md overflow-hidden">
-          <div className="md:flex">
-            <div className="w-full">
-              <div className="relative h-52 rounded-md border-dashed border-2 border-blue-200 hover:bg-gray-100 flex justify-center items-center">
-                <div className="absolute">
-                  <div className="flex flex-col items-center">
-                    <CloudUploadIcon className="w-12 h-12 text-gray-400" />
-                    <p className="pt-1 tracking-wider text-center text-gray-400 group-hover:text-gray-600">
-                      Drag and drop a file <br></br>
-                      or click to choose
-                    </p>
-                  </div>
-                </div>
-                <input
-                  type="file"
-                  className="h-full w-full opacity-0 hidden"
-                  {...getInputProps()}
-                />
-              </div>
-            </div>
+      {key && secret ? (
+        <div className="px-8 py-4">
+          <div className="flex gap-2 py-2 items-center">
+            <p className="font-semibold text-gray-700 w-1/5 text-lg">
+              Client Key:
+            </p>
+            <p className="w-3/5">{key}</p>
+            <CopyToClipboard text={key}>
+              <DuplicateIcon className="w-5 h-5 cursor-pointer" />
+            </CopyToClipboard>
+          </div>
+          <div className="flex gap-2 py-2 items-center">
+            <p className="font-semibold text-gray-700 w-1/5 text-lg">
+              Client Secret:
+            </p>
+            <p className="break-all w-3/5 text-sm">
+              {hidden ? '*'.repeat(48) : secret}
+            </p>
+            <button onClick={() => setHidden((prev) => !prev)}>
+              {hidden ? (
+                <EyeIcon className="w-5 h-5" />
+              ) : (
+                <EyeOffIcon className="w-5 h-5" />
+              )}
+            </button>
+            <CopyToClipboard text={secret}>
+              <DuplicateIcon className="w-5 h-5 cursor-pointer" />
+            </CopyToClipboard>
           </div>
         </div>
-      </div>
-      {acceptedFiles.length > 0 && acceptedList}
+      ) : (
+        <></>
+      )}
+
       <div className="flex flex-shrink-0 gap-2 flex-wrap items-center justify-end p-4 border-t border-gray-200 rounded-b-md">
         <button
           type="button"
@@ -111,100 +148,9 @@ function UploadFileBox({ setIsOpen }) {
               ? 'bg-gray-200'
               : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700'
           } text-white font-medium text-xs leading-tight uppercase rounded shadow-md focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out ml-1`}
-          onClick={() => upload()}
+          onClick={() => create()}
         >
-          Upload
-        </button>
-        <button
-          type="button"
-          className="inline-block px-6 py-2.5 bg-purple-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-purple-700 hover:shadow-lg focus:bg-purple-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-purple-800 active:shadow-lg transition duration-150 ease-in-out"
-          onClick={() => setIsOpen(false)}
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function UploadDirectory({ setIsOpen }) {
-  const { getRootProps, getInputProps, acceptedFiles, fileRejections } =
-    useDropzone({ multiple: true, minSize: 0, maxSize: maxFilesize });
-
-  const acceptedList = (
-    <ul className="flex flex-col list-group my-1 mx-4">
-      {acceptedFiles.map((af) => (
-        <li className="list-group-item list-group-item-success inline-flex">
-          <CheckIcon className="w-6 h-6 text-green-300" />
-          <span className="text-gray-600 text-sm">{af.name}</span>
-          <span className="text-gray-400 text-sm pl-2">{`(${(
-            af.size / MB
-          ).toPrecision(3)} MB)`}</span>
-        </li>
-      ))}
-    </ul>
-  );
-  const rejectedList = (
-    <ul className="flex flex-col list-group my-1 mx-4">
-      {fileRejections.map((r) => (
-        <li className="list-group-item list-group-item-fail inline-flex">
-          <XIcon className="w-5 h-5 text-red-400" />
-          <span className="text-gray-400 text-sm px-2">{r.file.name}</span>
-          <span className="text-gray-600 text-sm">{`(${r.errors[0].code.replaceAll(
-            '-',
-            ' '
-          )})`}</span>
-        </li>
-      ))}
-    </ul>
-  );
-  return (
-    <div className="shadow-lg relative flex flex-col w-1/3 bg-white bg-clip-padding rounded-md outline-none text-current p-2">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h5
-          className="text-xl font-medium leading-normal text-gray-800"
-          id="exampleModalScrollableLabel"
-        >
-          Upload a Directory to IPFS
-        </h5>
-      </div>
-
-      <div className="p-2 bg-white" {...getRootProps()}>
-        <div className="rounded-lg overflow-hidden">
-          <div className="md:flex">
-            <div className="w-full">
-              <div className="relative h-52 rounded-md border-dashed border-2 border-blue-200 hover:bg-gray-100 flex justify-center items-center">
-                <div className="absolute">
-                  <div className="flex flex-col items-center">
-                    <FolderIcon className="w-12 h-12 text-gray-400" />
-                    <p className="pt-1 tracking-wider text-center text-gray-400 group-hover:text-gray-600">
-                      Drag and drop folder <br></br>
-                      or click here to choose
-                    </p>
-                  </div>
-                </div>
-                <input
-                  type="file"
-                  className="h-full w-full opacity-0 hidden"
-                  directory=""
-                  webkitdirectory=""
-                  mozdirectory=""
-                  {...getInputProps()}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {acceptedFiles.length > 0 && acceptedList}
-      {fileRejections.length > 0 && rejectedList}
-      <div className="flex flex-shrink-0 gap-2 flex-wrap items-center justify-end p-4 border-t border-gray-200 rounded-b-md">
-        <button
-          type="button"
-          className="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out ml-1"
-          onClick={() => setIsOpen(false)}
-        >
-          Upload
+          Create
         </button>
         <button
           type="button"
