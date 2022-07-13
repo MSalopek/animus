@@ -7,453 +7,10 @@
 	},
 	"item": [
 		{
-			"name": "auth",
+			"name": "storage",
 			"item": [
 				{
-					"name": "storage",
-					"item": [
-						{
-							"name": "Get Storage",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{client_url}}/auth/storage",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage"
-									]
-								},
-								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
-							},
-							"response": []
-						},
-						{
-							"name": "Get Storage - paginate",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{client_url}}/auth/storage?limit=2&offset=2&asc",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage"
-									],
-									"query": [
-										{
-											"key": "limit",
-											"value": "2"
-										},
-										{
-											"key": "offset",
-											"value": "2"
-										},
-										{
-											"key": "asc",
-											"value": null
-										}
-									]
-								},
-								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
-							},
-							"response": []
-						},
-						{
-							"name": "Get Storage By ID",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{client_url}}/auth/storage/id/6",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"id",
-										"6"
-									]
-								},
-								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
-							},
-							"response": []
-						},
-						{
-							"name": "Get Storage By ID - err not found",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{client_url}}/auth/storage/id/101235",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"id",
-										"101235"
-									]
-								},
-								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
-							},
-							"response": []
-						},
-						{
-							"name": "Get Storage By CID",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{client_url}}/auth/storage/cid/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"cid",
-										"QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn"
-									]
-								},
-								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
-							},
-							"response": []
-						},
-						{
-							"name": "Delete Storage",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "DELETE",
-								"header": [],
-								"url": {
-									"raw": "{{client_url}}/auth/storage/id/6",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"id",
-										"6"
-									]
-								},
-								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
-							},
-							"response": []
-						},
-						{
-							"name": "Pin Storage Record",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{client_url}}/auth/storage/pin/id/6?force",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"pin",
-										"id",
-										"6"
-									],
-									"query": [
-										{
-											"key": "force",
-											"value": null
-										}
-									]
-								},
-								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
-							},
-							"response": []
-						},
-						{
-							"name": "Unpin Storage Record",
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{client_url}}/auth/storage/unpin/id/6?force",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"unpin",
-										"id",
-										"6"
-									],
-									"query": [
-										{
-											"key": "force",
-											"value": null
-										}
-									]
-								},
-								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
-							},
-							"response": []
-						},
-						{
-							"name": "Add File",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "",
-										"value": "",
-										"type": "text",
-										"disabled": true
-									}
-								],
-								"body": {
-									"mode": "formdata",
-									"formdata": [
-										{
-											"key": "file",
-											"type": "file",
-											"src": "/home/msalopek/Pictures/oglasnik.png"
-										},
-										{
-											"key": "",
-											"value": "",
-											"type": "text",
-											"disabled": true
-										}
-									]
-								},
-								"url": {
-									"raw": "{{client_url}}/auth/storage/add-file",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"add-file"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Fail Add Directory - unprocessable meta",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "",
-										"type": "text",
-										"value": "",
-										"disabled": true
-									}
-								],
-								"body": {
-									"mode": "formdata",
-									"formdata": [
-										{
-											"key": "files",
-											"type": "file",
-											"src": "/home/msalopek/projects/go-uof-sdk-master.zip"
-										},
-										{
-											"key": "name",
-											"value": "test-dir-client-1",
-											"type": "text"
-										},
-										{
-											"key": "files",
-											"type": "file",
-											"src": "/home/msalopek/Pictures/admin.png"
-										},
-										{
-											"key": "meta",
-											"value": "{'faulty':}",
-											"type": "text"
-										}
-									]
-								},
-								"url": {
-									"raw": "{{client_url}}/auth/storage/add-dir",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"add-dir"
-									],
-									"query": [
-										{
-											"key": "name",
-											"value": "test-dir",
-											"disabled": true
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Add Directory",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "",
-										"type": "text",
-										"value": "",
-										"disabled": true
-									}
-								],
-								"body": {
-									"mode": "formdata",
-									"formdata": [
-										{
-											"key": "files",
-											"type": "file",
-											"src": "/home/msalopek/projects/go-uof-sdk-master.zip"
-										},
-										{
-											"key": "name",
-											"value": "test-dir-client-1",
-											"type": "text"
-										},
-										{
-											"key": "files",
-											"type": "file",
-											"src": "/home/msalopek/Pictures/admin.png"
-										},
-										{
-											"key": "meta",
-											"value": "{ \"ext_user_id\": 12, \"origin\": \"java backend\", \"action\": \"save user uploads\" }",
-											"type": "text"
-										}
-									]
-								},
-								"url": {
-									"raw": "{{client_url}}/auth/storage/add-dir",
-									"host": [
-										"{{client_url}}"
-									],
-									"path": [
-										"auth",
-										"storage",
-										"add-dir"
-									],
-									"query": [
-										{
-											"key": "name",
-											"value": "test-dir",
-											"disabled": true
-										}
-									]
-								}
-							},
-							"response": []
-						}
-					]
-				},
-				{
-					"name": "WhoAmI",
+					"name": "Get Storage",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -467,22 +24,434 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"type": "text",
-								"value": "",
-								"disabled": true
-							}
-						],
+						"header": [],
 						"url": {
-							"raw": "{{client_url}}/auth/whoami",
+							"raw": "{{client_url}}/auth/storage?limit=2&offset=0",
 							"host": [
 								"{{client_url}}"
 							],
 							"path": [
 								"auth",
-								"whoami"
+								"storage"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "2"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Storage - paginate",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{client_url}}/auth/storage?limit=2&offset=2&asc",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "2"
+								},
+								{
+									"key": "offset",
+									"value": "2"
+								},
+								{
+									"key": "asc",
+									"value": null
+								}
+							]
+						},
+						"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Storage By ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{client_url}}/auth/storage/id/6",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"id",
+								"6"
+							]
+						},
+						"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Storage By ID - err not found",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{client_url}}/auth/storage/id/101235",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"id",
+								"101235"
+							]
+						},
+						"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Storage By CID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{client_url}}/auth/storage/cid/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"cid",
+								"QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn"
+							]
+						},
+						"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Storage",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{client_url}}/auth/storage/id/6",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"id",
+								"6"
+							]
+						},
+						"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+					},
+					"response": []
+				},
+				{
+					"name": "Pin Storage Record",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{client_url}}/auth/storage/pin/id/6?force",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"pin",
+								"id",
+								"6"
+							],
+							"query": [
+								{
+									"key": "force",
+									"value": null
+								}
+							]
+						},
+						"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+					},
+					"response": []
+				},
+				{
+					"name": "Unpin Storage Record",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{client_url}}/auth/storage/unpin/id/6?force",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"unpin",
+								"id",
+								"6"
+							],
+							"query": [
+								{
+									"key": "force",
+									"value": null
+								}
+							]
+						},
+						"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+					},
+					"response": []
+				},
+				{
+					"name": "Add File",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/msalopek/Pictures/oglasnik.png"
+								},
+								{
+									"key": "",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{client_url}}/auth/storage/add-file",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"add-file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fail Add Directory - unprocessable meta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/home/msalopek/projects/go-uof-sdk-master.zip"
+								},
+								{
+									"key": "name",
+									"value": "test-dir-client-1",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/home/msalopek/Pictures/admin.png"
+								},
+								{
+									"key": "meta",
+									"value": "{'faulty':}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{client_url}}/auth/storage/add-dir",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"add-dir"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "test-dir",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Directory",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/home/msalopek/projects/go-uof-sdk-master.zip"
+								},
+								{
+									"key": "name",
+									"value": "test-dir-client-1",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/home/msalopek/Pictures/admin.png"
+								},
+								{
+									"key": "meta",
+									"value": "{ \"ext_user_id\": 12, \"origin\": \"java backend\", \"action\": \"save user uploads\" }",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{client_url}}/auth/storage/add-dir",
+							"host": [
+								"{{client_url}}"
+							],
+							"path": [
+								"auth",
+								"storage",
+								"add-dir"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "test-dir",
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -517,6 +486,42 @@
 					],
 					"path": [
 						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "WhoAmI",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{client_url}}/auth/whoami",
+					"host": [
+						"{{client_url}}"
+					],
+					"path": [
+						"auth",
+						"whoami"
 					]
 				}
 			},

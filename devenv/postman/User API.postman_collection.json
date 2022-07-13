@@ -229,6 +229,113 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Delete Storage by ID",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{user_url}}/auth/user/storage/id/31",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"storage",
+										"id",
+										"31"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Pin Storage Record",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{user_url}}/auth/user/storage/pin/id/45",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"storage",
+										"pin",
+										"id",
+										"45"
+									]
+								},
+								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+							},
+							"response": []
+						},
+						{
+							"name": "Unpin Storage Record",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{user_url}}/auth/user/storage/unpin/id/45",
+									"host": [
+										"{{user_url}}"
+									],
+									"path": [
+										"auth",
+										"user",
+										"storage",
+										"unpin",
+										"id",
+										"45"
+									]
+								},
+								"description": "Get User Storage files using client_key+client_secret.\nThis is reserved for programatic API access."
+							},
+							"response": []
 						}
 					],
 					"event": [
@@ -354,7 +461,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"disabled\": true\n}",
+									"raw": "{\n    \"disabled\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
