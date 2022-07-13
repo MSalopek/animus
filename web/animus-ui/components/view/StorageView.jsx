@@ -7,15 +7,22 @@ import { DocumentAddIcon, FolderAddIcon } from '@heroicons/react/solid';
 import {
   DownloadIcon,
   DuplicateIcon,
+  ExternalLinkIcon,
   TrashIcon,
   InformationCircleIcon,
 } from '@heroicons/react/outline';
 
-import { ModalBtn, BtnContainer, RoundActionBtn } from '../buttons/Buttons';
+import {
+  ModalBtn,
+  BtnContainer,
+  RoundActionBtn,
+  RoundLinkBtn,
+} from '../buttons/Buttons';
 import Pagination from '../pagination/Pagination';
 import FileUploadModal from '../modals/FileUploadModal';
 import DirectoryUploadModal from '../modals/DirectoryUploadModal';
 import { DeleteStorage, UploadDirectory, UploadFile } from '../../service/http';
+import { IPFS_DEFAULT_GATEWAY } from '../../util/constants';
 
 export default StorageView;
 
@@ -139,6 +146,14 @@ function StorageRow({
         </div>
 
         <BtnContainer>
+          {cid ? (
+            <RoundLinkBtn
+              Icon={ExternalLinkIcon}
+              href={`${IPFS_DEFAULT_GATEWAY}/${cid}`}
+            ></RoundLinkBtn>
+          ) : (
+            ''
+          )}
           <RoundActionBtn Icon={DownloadIcon}></RoundActionBtn>
           <RoundActionBtn
             Icon={InformationCircleIcon}

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { format } from 'prettier';
 // import { ApiError } from "next/dist/server/api-utils";
 
 export const API_URL = process.env.NEXT_API_URL;
@@ -27,7 +28,7 @@ export async function UploadFile(token, file) {
   formData.append('file', file, file.name);
   return API({
     method: 'post',
-    url: "auth/user/storage/add-file",
+    url: 'auth/user/storage/add-file',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'multipart/form-data',
@@ -38,14 +39,15 @@ export async function UploadFile(token, file) {
 
 export async function UploadDirectory(token, files, dirname) {
   const formData = new FormData();
-  formData.append("name", dirname)
-  files.forEach(f => {
-    formData.append('files', f, f.name);
-  })
-  
+  formData.append('name', dirname);
+  files.forEach((f) => {
+    // NOTE: sending f.path can be used to preserve dir structure on BE
+    formData.append('files', f, f.path);
+  });
+
   return API({
     method: 'post',
-    url: "auth/user/storage/add-dir",
+    url: 'auth/user/storage/add-dir',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'multipart/form-data',

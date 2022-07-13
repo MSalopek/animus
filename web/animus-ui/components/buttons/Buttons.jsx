@@ -1,4 +1,4 @@
-export { BtnContainer, ModalBtn, RoundActionBtn };
+export { BtnContainer, ModalBtn, RoundActionBtn, RoundLinkBtn };
 
 function BtnContainer({ children }) {
   return <div className="py-2 inline-flex gap-2">{children}</div>;
@@ -17,7 +17,7 @@ function ModalBtn({ Icon, title, action }) {
 }
 
 function RoundActionBtn({ Icon, onClick, padding }) {
-  const p = padding ? `p-${padding}` : "p-2"
+  const p = padding ? `p-${padding}` : 'p-2';
   return (
     <button
       className={`${p} rounded-full border bg-gray-50 border-gray-200"`}
@@ -25,5 +25,19 @@ function RoundActionBtn({ Icon, onClick, padding }) {
     >
       {Icon && <Icon className="w-5 h-5" />}
     </button>
+  );
+}
+
+function RoundLinkBtn({ Icon, href, padding }) {
+  const p = padding ? `p-${padding}` : 'p-2';
+  return (
+    <a
+      target="_blank"
+      rel="noopener noreferrer"
+      href={href}
+      className={`${p} rounded-full border bg-gray-50 border-gray-200"`}
+    >
+      {Icon && <Icon className="w-5 h-5" />}
+    </a>
   );
 }

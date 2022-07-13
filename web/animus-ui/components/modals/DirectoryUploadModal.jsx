@@ -4,9 +4,10 @@ import Router from 'next/router';
 import { useDropzone } from 'react-dropzone';
 import { Dialog } from '@headlessui/react';
 import { FolderAddIcon, CheckIcon, XIcon } from '@heroicons/react/outline';
-import { MAXFILESIZE, MAXTOTALSIZE, MEGABYTE } from '../../util/constants';
+import { MAX_FILE_SIZE, MAX_TOTAL_SIZE, MEGABYTE } from '../../util/constants';
 
 import { Alert } from '../alert/Alert';
+import { format } from 'prettier';
 
 export default function DirectoryUploadModal({
   isOpen,
@@ -43,7 +44,7 @@ function UploadDirectory({ setIsOpen, uploadFunc }) {
       sum += f.size;
     });
 
-    if (sum > MAXTOTALSIZE) {
+    if (sum > MAX_TOTAL_SIZE) {
       setDisabled(true);
       setErrMessage('directory size exceeds 100Mb');
     }
@@ -66,7 +67,7 @@ function UploadDirectory({ setIsOpen, uploadFunc }) {
       // on the <input type="file"> for directory/multifile upload to work
       multiple: true,
       minSize: 0,
-      maxSize: MAXFILESIZE,
+      maxSize: MAX_FILE_SIZE,
       onDropRejected,
       onDropAccepted,
     });
@@ -104,8 +105,8 @@ function UploadDirectory({ setIsOpen, uploadFunc }) {
 
   const acceptedList = (
     <ul className="flex flex-col list-group my-1 mx-4">
-      {acceptedFiles.map((af) => (
-        <li className="list-group-item list-group-item-success inline-flex">
+      {acceptedFiles.map((af, i) => (
+        <li className="list-group-item list-group-item-success inline-flex" key={i}>
           <CheckIcon className="w-6 h-6 text-green-300" />
           <span className="text-gray-600 text-sm">{af.name}</span>
           <span className="text-gray-400 text-sm pl-2">{`(${(
@@ -117,8 +118,8 @@ function UploadDirectory({ setIsOpen, uploadFunc }) {
   );
   const rejectedList = (
     <ul className="flex flex-col list-group my-1 mx-4">
-      {fileRejections.map((r) => (
-        <li className="list-group-item list-group-item-fail inline-flex">
+      {fileRejections.map((r, i) => (
+        <li className="list-group-item list-group-item-fail inline-flex" key={i}>
           <XIcon className="w-5 h-5 text-red-400" />
           <span className="text-gray-400 text-sm px-2">{r.file.name}</span>
           <span className="text-gray-600 text-sm">{`(${r.errors[0].code.replaceAll(

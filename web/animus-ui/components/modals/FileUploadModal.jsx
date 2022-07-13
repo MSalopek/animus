@@ -7,7 +7,7 @@ import {
   CloudUploadIcon,
   CheckIcon,
 } from '@heroicons/react/outline';
-import { MAXFILESIZE, MEGABYTE } from '../../util/constants';
+import { MAX_FILE_SIZE, MEGABYTE } from '../../util/constants';
 
 import { Alert } from '../alert/Alert';
 
@@ -53,7 +53,7 @@ function UploadFileBox({ setIsOpen, uploadFunc }) {
     useDropzone({
       multiple: true,
       minSize: 0,
-      maxSize: MAXFILESIZE,
+      maxSize: MAX_FILE_SIZE,
       onDropRejected,
       onDropAccepted,
     });
