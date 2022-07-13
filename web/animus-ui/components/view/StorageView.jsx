@@ -19,28 +19,27 @@ import { DeleteStorage, UploadDirectory, UploadFile } from '../../service/http';
 
 export default StorageView;
 
-function StorageView({ rows, total, pages }) {
-
+function StorageView({ rows, total, pages, currentPage }) {
   const { data: session, status } = useSession();
 
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDirModalOpen, setIsDirModalOpen] = useState(false);
 
-  const uploadFile = async(file) => {
-    return await UploadFile(session.user.accessToken, file)
-  }
+  const uploadFile = async (file) => {
+    return await UploadFile(session.user.accessToken, file);
+  };
 
   const uploadDir = async (files, dirname) => {
-    return await UploadDirectory(session.user.accessToken, files, dirname)
-  }
+    return await UploadDirectory(session.user.accessToken, files, dirname);
+  };
 
   const deleteRow = async (id) => {
-    await DeleteStorage(session.user.accessToken, id)
+    await DeleteStorage(session.user.accessToken, id);
     Router.reload(window.location.pathname);
-  }
+  };
 
   return (
-    <section className="bg-white dark:bg-gray-900">
+    <section className="bg-white dark:bg-gray-900 min-h-screen">
       <FileUploadModal
         isOpen={isFileModalOpen}
         setIsOpen={setIsFileModalOpen}
@@ -51,27 +50,30 @@ function StorageView({ rows, total, pages }) {
         setIsOpen={setIsDirModalOpen}
         uploadFunc={uploadDir}
       />
-      <div className="container px-6 py-12 mx-auto">
+      <div className="container px-6 pt-12 mx-auto">
         <div className="flex flex-col">
           <h1 className="text-3xl font-semibold text-gray-800 dark:text-white mb-2">
             Storage Manager
           </h1>
-          <BtnContainer>
-            <ModalBtn
-              Icon={DocumentAddIcon}
-              title={'Add File'}
-              action={() => {
-                setIsFileModalOpen(true);
-              }}
-            />
-            <ModalBtn
-              Icon={FolderAddIcon}
-              title={'Add Folder'}
-              action={() => {
-                setIsDirModalOpen(true);
-              }}
-            />
-          </BtnContainer>
+          <div className="flex w-full justify-between">
+            <BtnContainer>
+              <ModalBtn
+                Icon={DocumentAddIcon}
+                title={'Add File'}
+                action={() => {
+                  setIsFileModalOpen(true);
+                }}
+              />
+              <ModalBtn
+                Icon={FolderAddIcon}
+                title={'Add Folder'}
+                action={() => {
+                  setIsDirModalOpen(true);
+                }}
+              />
+            </BtnContainer>
+            <Pagination url={'/'} currentPage={currentPage} pages={pages} />
+          </div>
         </div>
 
         {rows && (
@@ -94,7 +96,6 @@ function StorageView({ rows, total, pages }) {
           </div>
         )}
       </div>
-      <Pagination total={total} />
     </section>
   );
 }
@@ -109,7 +110,7 @@ function StorageRow({
   stage,
   pinned,
   created_at,
-  deleteFunc
+  deleteFunc,
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -119,17 +120,19 @@ function StorageRow({
         <div className="grid grid-cols-2 w-3/4">
           <div className="text-gray-700 dark:text-white">
             <span className="text-sm text-gray-400">Name:</span>
-            <h1 className="font-semibold">{name}</h1>
+            <h1 className="font-semibold break-all">{name}</h1>
           </div>
 
-          <div clasName="text-gray-700 dark:text-white">
+          <div className="text-gray-700 dark:text-white">
             <span className="text-sm text-gray-400">CID:</span>
-            <div className="flex items-center text-gray-700 dark:text-white">
-              <h1 className="pr-2">{cid || 'N/A'}</h1>
+            <div className="flex flex-row sm:flex-col md:flex-row lg:flex-row xl:flex-row items-center text-gray-700 dark:text-white">
+              <h1 className="pr-2 break-all">{cid || 'N/A'}</h1>
               {cid && (
-                <CopyToClipboard text={cid || ''}>
-                  <DuplicateIcon className="w-5 h-5" />
-                </CopyToClipboard>
+                <span>
+                  <CopyToClipboard text={cid || ''}>
+                    <DuplicateIcon className="w-5 h-5" />
+                  </CopyToClipboard>
+                </span>
               )}
             </div>
           </div>
@@ -141,7 +144,7 @@ function StorageRow({
             Icon={InformationCircleIcon}
             onClick={() => setExpanded(!expanded)}
           />
-          <RoundActionBtn Icon={TrashIcon} onClick={() => deleteFunc(id)}/>
+          <RoundActionBtn Icon={TrashIcon} onClick={() => deleteFunc(id)} />
           {/* <RoundActionBtn Icon={ArrowsExpandIcon} /> */}
         </BtnContainer>
       </div>

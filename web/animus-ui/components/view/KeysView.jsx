@@ -81,7 +81,7 @@ function KeysView({ rows }) {
   };
 
   return (
-    <section className="bg-white dark:bg-gray-900">
+    <section className="bg-white dark:bg-gray-900 min-h-screen">
       <CreateKeyModal
         isOpen={isKeyModalOpen}
         setIsOpen={setIsKeyModalOpen}
