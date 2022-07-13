@@ -91,6 +91,9 @@ func (api *UserAPI) registerHandlers() {
 	auth.DELETE("/user/storage/id/:id", api.DeleteStorageRecord)
 	auth.POST("/user/storage/add-file", api.UploadFile)
 	auth.POST("/user/storage/add-dir", api.UploadDir)
+	auth.GET("/user/storage/download/id/:id", api.UploadDir)
+
+	// IPFS operations
 	auth.POST("/user/storage/pin/id/:id", api.RequestPin)
 	auth.POST("/user/storage/unpin/id/:id", api.RequestUnpin)
 

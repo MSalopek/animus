@@ -73,6 +73,14 @@ func (api *UserAPI) UploadFile(c *gin.Context) {
 
 // UploadDir extracts files from gin.Context (multipart form),
 // uploads them to default storage bucket and publishes a PinRequest message.
+// NOTE: nested directories are not preserved!!!
+// Caveats about uploads:
+// 1. Keeping nested directories:
+//    - to preserve nested dirs and allow files with same name we would need
+//      to read the filename from the Content-Disposition
+//    - RFC 7578, Section 4.2 states that file prefixes should be dropped
+//    - to parse nested dirs we could ignore the RFC 7578 and parse the filenames once more
+//    - check https://cs.opensource.google/go/go/+/refs/tags/go1.18.4:src/mime/multipart/multipart.go;l=74
 func (api *UserAPI) UploadDir(c *gin.Context) {
 	ctxUID := c.GetInt("userID")
 

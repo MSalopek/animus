@@ -296,14 +296,14 @@ func (m *Manager) FSUploadExpirableFile(ctx context.Context, bucket, path string
 }
 
 // Recursively download bucket contents and return path to downloaded files.
-func (m *Manager) DownloadBucket(ctx context.Context, bucket string) (string, error) {
+func (m *Manager) downloadBucket(ctx context.Context, bucket string) (string, error) {
 	dir, err := ioutil.TempDir(m.conf.TmpDir, m.conf.TmpDirPrefix)
 	if err != nil {
 		return "", err
 	}
 
 	for c := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Recursive: true}) {
-		err := m.DownloadFileToDir(ctx, dir, c.Key, bucket)
+		err := m.DownloadFileToDir(ctx, bucket, dir, c.Key)
 		if err != nil {
 			return "", err
 		}
@@ -312,45 +312,52 @@ func (m *Manager) DownloadBucket(ctx context.Context, bucket string) (string, er
 }
 
 // Recursively download folder contents and return path to downloaded files.
-// Dir represents a bucket prefix from which the recursive directory traversal will start.
-func (m *Manager) DownloadDir(ctx context.Context, bucket, dir string) (string, error) {
+// prefix represents a bucket prefix from which the recursive directory traversal will start.
+func (m *Manager) DownloadDir(ctx context.Context, bucket, prefix string) (string, error) {
 	if bucket == "" {
 		return "", errors.New("bucket not provided")
 	}
-	if dir == "" {
-		return "", errors.New("folder path not provided")
+	if prefix == "" {
+		return "", errors.New("path prefix not provided")
 	}
 
-	dir, err := ioutil.TempDir(m.conf.TmpDir, m.conf.TmpDirPrefix)
+	tmpDir, err := ioutil.TempDir(m.conf.TmpDir, m.conf.TmpDirPrefix)
 	if err != nil {
 		return "", err
 	}
 
-	for c := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Recursive: true, Prefix: dir}) {
-		err := m.DownloadFileToDir(ctx, dir, c.Key, bucket)
+	for c := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Recursive: true, Prefix: prefix}) {
+		// ex. key: 1/some-filename.ext
+		sKey := strings.SplitN(c.Key, "/", 2)
+		if len(sKey) != 2 {
+			return "", fmt.Errorf("invalid key: %s", c.Key)
+		}
+		fname := sKey[1]
+		err := m.DownloadFileToDirWithName(ctx, bucket, tmpDir, c.Key, fname)
 		if err != nil {
 			return "", err
 		}
 	}
-	return dir, nil
+
+	return tmpDir, nil
 }
 
 // Recursively download directory contents, tar.gz on destination and return path to downloaded file.
-// Dir represents a bucket prefix from which the recursive directory traversal will start.
-func (m *Manager) DownloadDirTarGz(ctx context.Context, bucket, dir string) (string, error) {
+// prefix represents a bucket prefix from which the recursive directory traversal will start.
+func (m *Manager) DownloadDirTarGz(ctx context.Context, bucket, prefix string) (string, error) {
 	if bucket == "" {
 		return "", errors.New("bucket not provided")
 	}
-	if dir == "" {
+	if prefix == "" {
 		return "", errors.New("folder path not provided")
 	}
 
-	dir, err := ioutil.TempDir(m.conf.TmpDir, m.conf.TmpDirPrefix)
+	tmpDir, err := ioutil.TempDir(m.conf.TmpDir, m.conf.TmpDirPrefix)
 	if err != nil {
 		return "", err
 	}
 
-	archive := path.Join(dir, fmt.Sprintf("%s.tar.gz", bucket))
+	archive := path.Join(tmpDir, fmt.Sprintf("%s.tar.gz", prefix))
 	fileW, err := os.Create(archive)
 	if err != nil {
 		return "", err
@@ -359,7 +366,7 @@ func (m *Manager) DownloadDirTarGz(ctx context.Context, bucket, dir string) (str
 
 	zw := gzip.NewWriter(fileW)
 	tw := tar.NewWriter(zw)
-	for c := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Recursive: true, Prefix: dir}) {
+	for c := range m.ListObjects(ctx, bucket, minio.ListObjectsOptions{Recursive: true, Prefix: prefix}) {
 		object, err := m.GetObject(ctx, bucket, c.Key, minio.GetObjectOptions{})
 		if err != nil {
 			return "", nil
@@ -426,6 +433,21 @@ func (m *Manager) DownloadFileToDir(ctx context.Context, bucket, dir, fname stri
 
 	fpath := path.Join(dir, fname)
 	if err := m.FGetObject(ctx, bucket, fname, fpath, minio.GetObjectOptions{}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Download a single file from bucket and store it to the dir returning path to the file.
+// The file name will be set to fname. This is useful for striping folder prefixes.
+func (m *Manager) DownloadFileToDirWithName(ctx context.Context, bucket, dir, key, fname string) error {
+	if _, err := os.Stat(dir); err != nil {
+		return nil
+	}
+
+	fpath := path.Join(dir, fname)
+	if err := m.FGetObject(ctx, bucket, key, fpath, minio.GetObjectOptions{}); err != nil {
 		return err
 	}
 

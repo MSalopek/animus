@@ -3,6 +3,7 @@ auth_authority: "AnimusEngine"
 auth_expiration_hours: 24
 cors_origins:
     - "http://localhost:3000"
+    - "http://localhost:3001"
 
 http_port: "localhost:8083"
 db_dsn: "host=localhost user=animus password=animus dbname=animus port=5436 sslmode=disable"
