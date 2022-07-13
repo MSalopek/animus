@@ -154,7 +154,7 @@ function StorageRow({
           ) : (
             ''
           )}
-          <RoundActionBtn Icon={DownloadIcon}></RoundActionBtn>
+          {/* <RoundActionBtn Icon={DownloadIcon}></RoundActionBtn> */}
           <RoundActionBtn
             Icon={InformationCircleIcon}
             onClick={() => setExpanded(!expanded)}
