@@ -93,8 +93,10 @@ func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]*model.Storage, err
 	return s, nil
 }
 
-// GetCountedUserUploads returns storage rows with total row count attached to each row.
 // TODO: work out how to do keeping row counts in a smarter way.
+// GetCountedUserUploads returns storage rows with total row count attached to each row.
+// The number of rows is >= 1. If there are no records the returned row has all fields set to
+// zero values and TotalRows set to 0.
 func (rpo *Repo) GetCountedUserUploads(ctx QueryCtx, userID int) ([]*model.CountedStorage, error) {
 	var s []*model.CountedStorage
 

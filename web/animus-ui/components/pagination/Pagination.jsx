@@ -10,7 +10,7 @@ function Pagination({ url, currentPage, pages }) {
         <span className="text-sm text-gray-700 dark:text-gray-400">
           Showing page{' '}
           <span className="font-semibold text-gray-900 dark:text-white">
-            {currentPage}
+            {pages === 0 ? 0 : currentPage}
           </span>{' '}
           out of{' '}
           <span className="font-semibold text-gray-900 dark:text-white">
@@ -35,7 +35,7 @@ function Pagination({ url, currentPage, pages }) {
               Prev
             </a>
           )}
-          {currentPage !== pages ? (
+          {currentPage < pages ? (
             <Link href={`${url}?page=${currentPage + 1}`}>
               <a className="inline-flex gap-x-2 items-center py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded border border-gray-400">
                 Next

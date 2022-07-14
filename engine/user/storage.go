@@ -160,12 +160,21 @@ func (api *UserAPI) GetUserUploads(c *gin.Context) {
 		return
 	}
 
-	resp := engine.GetStorageResponse{
-		Returned: len(rows),
-		Rows:     rows,
+	// the query always returns >= 1 row
+	var data []*model.Storage
+	for _, r := range rows {
+		if r.ID != 0 {
+			data = append(data, r.ToStorage())
+		}
 	}
+
+	resp := engine.GetStorageResponse{
+		Returned: len(data),
+		Rows:     data,
+	}
+
 	// total record count is the same for each returned record
-	if len(rows) > 0 {
+	if len(data) > 0 {
 		resp.Total = rows[0].TotalRows
 	}
 

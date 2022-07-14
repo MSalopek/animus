@@ -26,7 +26,7 @@ type UpdateKeyRequest struct {
 }
 
 type GetStorageResponse struct {
-	Total    int                     `json:"total"`
-	Returned int                     `json:"returned"`
-	Rows     []*model.CountedStorage `json:"rows"`
+	Total    int              `json:"total"`
+	Returned int              `json:"returned"`
+	Rows     []*model.Storage `json:"rows"`
 }

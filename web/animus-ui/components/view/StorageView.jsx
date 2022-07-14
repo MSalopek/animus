@@ -21,6 +21,8 @@ import {
 import Pagination from '../pagination/Pagination';
 import FileUploadModal from '../modals/FileUploadModal';
 import DirectoryUploadModal from '../modals/DirectoryUploadModal';
+import Tooltip from '../tooltip/Tooltip';
+
 import { DeleteStorage, UploadDirectory, UploadFile } from '../../service/http';
 import { IPFS_DEFAULT_GATEWAY } from '../../util/constants';
 
@@ -147,20 +149,26 @@ function StorageRow({
 
         <BtnContainer>
           {cid ? (
-            <RoundLinkBtn
-              Icon={ExternalLinkIcon}
-              href={`${IPFS_DEFAULT_GATEWAY}/${cid}`}
-            ></RoundLinkBtn>
+            <Tooltip message={'Open on IPFS'}>
+              <RoundLinkBtn
+                Icon={ExternalLinkIcon}
+                href={`${IPFS_DEFAULT_GATEWAY}/${cid}`}
+              ></RoundLinkBtn>
+            </Tooltip>
           ) : (
             ''
           )}
           {/* <RoundActionBtn Icon={DownloadIcon}></RoundActionBtn> */}
-          <RoundActionBtn
-            Icon={InformationCircleIcon}
-            onClick={() => setExpanded(!expanded)}
-          />
-          <RoundActionBtn Icon={TrashIcon} onClick={() => deleteFunc(id)} />
-          {/* <RoundActionBtn Icon={ArrowsExpandIcon} /> */}
+          <Tooltip message={'Show details'}>
+            <RoundActionBtn
+              Icon={InformationCircleIcon}
+              onClick={() => setExpanded(!expanded)}
+            />
+          </Tooltip>
+          <Tooltip message={'Delete the record'}>
+            <RoundActionBtn Icon={TrashIcon} onClick={() => deleteFunc(id)} />
+            {/* <RoundActionBtn Icon={ArrowsExpandIcon} /> */}
+          </Tooltip>
         </BtnContainer>
       </div>
       {expanded && (
