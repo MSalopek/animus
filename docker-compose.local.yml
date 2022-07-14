@@ -63,7 +63,7 @@ services:
       - 4161:4161
   nsqd:
     image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=127.0.0.1
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
     depends_on:
       - nsqlookupd
     ports:
