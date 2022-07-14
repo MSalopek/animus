@@ -63,7 +63,7 @@ services:
       - 4161:4161
   nsqd:
     image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=127.0.0.1 # --broadcast-address=nsqd # uncommment this to use nsqadmin from docker
     depends_on:
       - nsqlookupd
     ports:
@@ -73,7 +73,7 @@ services:
     image: nsqio/nsq
     command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
     depends_on:
-      - nsqlookupd  
+      - nsqlookupd
     ports:
       - 4171:4171
 
