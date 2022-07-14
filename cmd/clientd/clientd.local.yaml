@@ -10,6 +10,6 @@ storage:
     endpoint: "localhost:9000"
     access_key_id: "AYEKOSQDTJR0E12W2BRS"
     access_key_secret: "H+gdD9eaBYuBEbtyRTblmVdQSAXVBLjim83r9I+H"
-nsq_topic: "pin-requests"
+nsq_pinner_topic: "pin-requests"
 nsqd_url: "localhost:4150"
 gin_mode: ""

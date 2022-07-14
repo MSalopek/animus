@@ -61,7 +61,7 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 			ExpirationHours: time.Duration(cfg.AuthExpirationHours) * time.Hour,
 		},
 		storage:   storage.MustNewManager(cfg.Storage),
-		publisher: queue.MustNewPublisher(cfg.NsqTopic, cfg.NsqdURL),
+		publisher: queue.MustNewPublisher(cfg.NsqPinnerTopic, cfg.NsqdURL),
 		done:      done,
 		logger:    logger,
 	}
@@ -74,6 +74,7 @@ func (api *UserAPI) registerHandlers() {
 	root.GET("/ping", api.Ping)
 	root.POST("/login", api.Login)
 	root.POST("/register", api.Register)
+	root.POST("/activate/email/:email", api.ActivateUser)
 
 	auth := root.Group("/auth").Use(
 		authorizeUserRequest(api.auth),

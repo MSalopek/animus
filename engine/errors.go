@@ -11,6 +11,7 @@ var (
 	ErrInternalError = &APIError{"internal error"}
 	ErrUnauthorized  = &APIError{"unauthorized"}
 	ErrForbidden     = &APIError{"forbidden"}
+	ErrBadRequest    = &APIError{"bad request"}
 
 	ErrCouldNotLogin      = &APIError{"could not log in"}
 	ErrCouldNotRegister   = &APIError{"could not register"}
@@ -23,6 +24,7 @@ var (
 
 	ErrJWTExpired            = &APIError{"JWT expired"}
 	ErrJWTClaimUnprocessable = &APIError{"unprocessable JWT"}
+	ErrTokenExpired          = &APIError{"token is expired"}
 
 	ErrInvalidMeta        = &APIError{"unprocessable meta field"}
 	ErrUserNotFound       = &APIError{"user not found"}

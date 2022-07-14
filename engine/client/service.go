@@ -48,7 +48,7 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 		},
 		repo:      repo,
 		storage:   storage.MustNewManager(cfg.Storage),
-		publisher: queue.MustNewPublisher(cfg.NsqTopic, cfg.NsqdURL),
+		publisher: queue.MustNewPublisher(cfg.NsqPinnerTopic, cfg.NsqdURL),
 		done:      done,
 		logger:    logger,
 	}

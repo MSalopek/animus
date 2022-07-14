@@ -51,6 +51,15 @@ func New(db *gorm.DB) *Repo {
 	return &Repo{DB: db}
 }
 
+func (rpo *Repo) GetUserById(id int) (*model.User, error) {
+	var user model.User
+	res := rpo.Where("id = ? AND deleted_at IS NULL", id).First(&user)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &user, nil
+}
+
 func (rpo *Repo) GetUserByEmail(email string) (*model.User, error) {
 	var user model.User
 	res := rpo.Where("email = ? AND deleted_at IS NULL", email).First(&user)
@@ -195,4 +204,40 @@ func (rpo *Repo) UpdateUserApiKey(userID int, keyID int, update *engine.UpdateKe
 		return nil, res.Error
 	}
 	return &key, nil
+}
+
+func (rpo *Repo) CreateRegisterToken(userID int) (*model.Token, error) {
+	tk := model.Token{
+		UserID: int64(userID),
+		Type:   model.TokenTypeRegisterEmail,
+	}
+	res := rpo.Select("user_id", "type").Create(&tk)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	res = rpo.Where("id = ?", tk.ID).First(&tk)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return &tk, nil
+}
+
+func (rpo *Repo) GetUserToken(email, token, tokenType string) (*model.Token, error) {
+	var tk model.Token
+	res := rpo.Debug().Table("tokens").
+		Joins("JOIN users ON users.id = tokens.user_id").
+		Where(`users.email = ?
+		AND users.deleted_at IS NULL
+		AND tokens.token = ?
+		AND tokens.valid_to > now()
+		AND tokens.type = ?
+		AND tokens.is_used IS FALSE`, email, token, tokenType).
+		First(&tk)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	return &tk, nil
 }

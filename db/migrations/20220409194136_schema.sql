@@ -32,18 +32,24 @@ CREATE TYPE key_access_rights AS ENUM (
 	'rwd'
 );
 
+CREATE TYPE token_type AS ENUM (
+	'register_email',
+	'reset_pass'
+);
+
 
 CREATE TABLE users (
 	id BIGSERIAL PRIMARY KEY,
 	username VARCHAR(32) UNIQUE NOT NULL,
 	firstname VARCHAR(32),
 	lastname VARCHAR(32),
-	email EMAIL NOT NULL,
-	password BCRYPT NOT NULL,
+	email EMAIL UNIQUE NOT NULL,
+	password CHAR(60) NOT NULL,
 	max_keys INT NOT NULL default 5,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
+	active BOOLEAN NOT NULL DEFAULT false,
 
 	CONSTRAINT users_email_uniq UNIQUE (email),
 	CONSTRAINT users_email_valid CHECK (email ~ '^[^@]+@[^@]+$'),
@@ -52,12 +58,27 @@ CREATE TABLE users (
 		deleted_at IS NULL
 		OR deleted_at >= created_at
 	),
-	CONSTRAINT users_pass_hash CHECK (LENGTH(password) IN (59, 60))
+
+	CONSTRAINT users_pass_bcrypt_check CHECK (LENGTH(password) IN (59, 60))
 );
 
 CREATE TRIGGER users_soft_delete
   BEFORE DELETE ON users
   FOR EACH ROW EXECUTE PROCEDURE pg_soft_delete();
+
+
+CREATE TABLE tokens (
+	id BIGSERIAL PRIMARY KEY,
+	user_id BIGINT REFERENCES users(id),
+	token uuid UNIQUE DEFAULT uuid_generate_v4() NOT NULL,
+	type TOKEN_TYPE NOT NULL DEFAULT 'register_email'::token_type,
+	
+	valid_from TIMESTAMP NOT NULL DEFAULT now(),
+	valid_to TIMESTAMP NOT NULL DEFAULT now() + interval '3 day',
+	is_used BOOLEAN NOT NULL DEFAULT false
+);
+
+CREATE INDEX tokens_user_id_idx ON tokens(user_id);
 
 
 CREATE TABLE storage (
@@ -220,11 +241,13 @@ DROP TABLE user_subscriptions;
 DROP TABLE subscriptions;
 DROP TABLE gateways;
 DROP TABLE storage;
+DROP TABLE tokens;
 DROP TABLE users;
 DROP TYPE upload_stage;
 DROP TYPE key_access_rights;
 DROP TYPE bcrypt;
 DROP TYPE domain_slug;
 DROP TYPE email;
+DROP TYPE token_type;
 DROP FUNCTION check_add_key_permitted;
 DROP FUNCTION pg_soft_delete;

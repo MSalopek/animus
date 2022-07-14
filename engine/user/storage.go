@@ -343,7 +343,7 @@ func (api *UserAPI) publishPinRequest(m *model.Storage) error {
 		return err
 	}
 
-	err = api.publisher.Publish(api.cfg.NsqTopic, body)
+	err = api.publisher.Publish(api.cfg.NsqPinnerTopic, body)
 	if err != nil {
 		return err
 	}
@@ -368,7 +368,7 @@ func (api *UserAPI) publishUnpinRequest(m *model.Storage) error {
 		return err
 	}
 
-	err = api.publisher.Publish(api.cfg.NsqTopic, body)
+	err = api.publisher.Publish(api.cfg.NsqPinnerTopic, body)
 	if err != nil {
 		return err
 	}

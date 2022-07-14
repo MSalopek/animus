@@ -20,6 +20,11 @@ const (
 	ClientAccessRead            = "r"
 	ClientAccessReadWrite       = "rw"
 	ClientAccessReadWriteDelete = "rwd"
+
+	TokenTypeRegisterEmail = "register_email"
+	TokenTypeResetPass     = "reset_pass"
+
+	DefaultMaxKeys = 5
 )
 
 type User struct {
@@ -33,6 +38,7 @@ type User struct {
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	Active    bool       `json:"active"`
 }
 
 type Storage struct {
@@ -93,6 +99,17 @@ type Key struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 	ValidFrom time.Time  `json:"valid_from"`
 	ValidTo   PgTime     `json:"-"`
+}
+
+type Token struct {
+	ID     int64  `json:"id" gorm:"primaryKey"`
+	UserID int64  `json:"user_id"`
+	Type   string `json:"type"`
+	Token  string `json:"token"`
+
+	ValidFrom time.Time `json:"valid_from"`
+	ValidTo   PgTime    `json:"-"`
+	IsUsed    bool      `json:"is_used"`
 }
 
 type Subscription struct {

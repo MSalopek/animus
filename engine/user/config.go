@@ -22,8 +22,9 @@ type Config struct {
 	TextLogs            bool     `json:"text_logs,omitempty" yaml:"text_logs"`
 	LogFile             string   `json:"log_file,omitempty" yaml:"log_file"`
 
-	NsqdURL  string `json:"nsqd_url,omitempty" yaml:"nsqd_url"`
-	NsqTopic string `json:"nsq_topic,omitempty" yaml:"nsq_topic"`
+	NsqdURL               string `json:"nsqd_url,omitempty" yaml:"nsqd_url"`
+	NsqPinnerTopic        string `json:"nsq_pinner_topic,omitempty" yaml:"nsq_pinner_topic"`
+	NsqEmailRegisterTopic string `json:"nsq_email_register_topic,omitempty" yaml:"nsq_email_register_topic"`
 
 	Bucket  string         `json:"bucket,omitempty" yaml:"bucket"`
 	Storage storage.Config `json:"storage,omitempty" yaml:"storage"`
