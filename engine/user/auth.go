@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -220,9 +221,10 @@ func (api *UserAPI) WhoAmI(c *gin.Context) {
 }
 
 func (api *UserAPI) publishRegisterEmail(m *model.User, token string) error {
+	url := fmt.Sprintf("%s/%s?token=%s", api.cfg.ActivateUserWebURL, m.Email, token)
 	e := queue.RegisterEmail{
 		Email:     m.Email,
-		Token:     token,
+		URL:       url,
 		Username:  &m.Username,
 		Firstname: m.Firstname,
 		Lastname:  m.Lastname,

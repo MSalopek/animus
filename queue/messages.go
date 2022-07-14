@@ -30,8 +30,8 @@ type RegisterEmail struct {
 	Username  *string `json:"username,omitempty"`
 	Firstname *string `json:"firstname,omitempty"`
 	Lastname  *string `json:"lastname,omitempty"`
+	URL       string  `json:"url"`
 	Email     string  `json:"email"`
-	Token     string  `json:"token"`
 }
 
 func (re *RegisterEmail) Unmarshal(raw []byte) error {

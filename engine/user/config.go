@@ -26,6 +26,9 @@ type Config struct {
 	NsqPinnerTopic        string `json:"nsq_pinner_topic,omitempty" yaml:"nsq_pinner_topic"`
 	NsqEmailRegisterTopic string `json:"nsq_email_register_topic,omitempty" yaml:"nsq_email_register_topic"`
 
+	// used in links for registration or password reset emails
+	ActivateUserWebURL string `json:"activate_user_web_url" yaml:"activate_user_web_url"`
+
 	Bucket  string         `json:"bucket,omitempty" yaml:"bucket"`
 	Storage storage.Config `json:"storage,omitempty" yaml:"storage"`
 	GinMode string         `json:"gin_mode,omitempty" yaml:"gin_mode"`

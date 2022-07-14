@@ -131,6 +131,10 @@ export async function Register(params) {
   return res.data;
 }
 
+export async function ActivateUser(email, token) {
+  return await axios.post(`${API_URL}/activate/email/${email}?token=${token}`);
+}
+
 // export async function Logout() {
 //   localStorage.removeItem('user');
 // }
