@@ -20,7 +20,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"username\": \"admin\",\n    \"firstname\": \"Animus\",\n    \"lastname\": \"Administrator\",\n    \"password\": \"administrator\"\n}",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"username\": \"animusUser\",\n    \"firstname\": \"Animus\",\n    \"lastname\": \"User\",\n    \"password\": \"animusUser\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -97,6 +97,45 @@
 							],
 							"path": [
 								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activate",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"connection": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{user_url}}/activate/email/admin@example.com?token=7bfd582c-46e8-472a-b342-0f7fc6e729bd",
+							"host": [
+								"{{user_url}}"
+							],
+							"path": [
+								"activate",
+								"email",
+								"admin@example.com"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "7bfd582c-46e8-472a-b342-0f7fc6e729bd"
+								}
 							]
 						}
 					},
