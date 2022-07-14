@@ -6,13 +6,15 @@ import Router from 'next/router';
 import { unstable_getServerSession } from 'next-auth/next';
 import { authOptions } from '../api/auth/[...nextauth]';
 import { signIn } from 'next-auth/react';
+import { AlertSuccess } from '../../components/alert/Alert';
 
 export default Login;
 
-function Login() {
+function Login({ verified }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [err, setErr] = useState('');
+  const [showVerified, setShowVerified] = useState(verified);
 
   const handleErr = (errString) => {
     if (!errString) {
@@ -25,7 +27,9 @@ function Login() {
     ) {
       setErr('Email or password are not correct.');
     } else {
-      setErr('Unable to log in at this time. Please try again later or contact support.');
+      setErr(
+        'Unable to log in at this time. Please try again later or contact support.'
+      );
     }
   };
 
@@ -49,10 +53,23 @@ function Login() {
     }
   };
 
+  const clearSuccess = () => {
+    setShowVerified(false);
+  };
+
   return (
     <div className="grid justify-items-center items-center h-screen bg-gray-50">
       <div className="w-full max-w-lg mx-auto overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800">
         <div className="px-6 py-4">
+        {showVerified && (
+          <div className="py-2">
+
+            <AlertSuccess
+              message={'Email verification complete.'}
+              onClick={clearSuccess}
+              />
+              </div>
+          )}
           <h2 className="text-3xl font-bold text-center text-gray-700 dark:text-white">
             Animus Store
           </h2>
@@ -134,6 +151,7 @@ function Login() {
   );
 }
 export async function getServerSideProps(context) {
+  const { verified } = context.query;
   const session = await unstable_getServerSession(
     context.req,
     context.res,
@@ -157,6 +175,7 @@ export async function getServerSideProps(context) {
   return {
     props: {
       session,
+      verified: verified ? true : false,
     },
   };
 }

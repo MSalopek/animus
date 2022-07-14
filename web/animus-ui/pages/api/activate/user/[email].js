@@ -11,7 +11,7 @@ export default async function activateUser(req, res) {
 	// go to error page
     return res.status(401).json({ message: 'could not activate user' });
   } else {
-    res.writeHead(307, { Location: '/?verified=true' });
+    res.writeHead(307, { Location: '/account/login?verified=true' });
     res.end();
   }
 }
