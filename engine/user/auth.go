@@ -222,7 +222,8 @@ func (api *UserAPI) WhoAmI(c *gin.Context) {
 
 func (api *UserAPI) publishRegisterEmail(m *model.User, token string) error {
 	url := fmt.Sprintf("%s/%s?token=%s", api.cfg.ActivateUserWebURL, m.Email, token)
-	e := queue.RegisterEmail{
+	e := queue.MailerMessage{
+		Type:      queue.MailerTypeRegister,
 		Email:     m.Email,
 		URL:       url,
 		Username:  &m.Username,
@@ -234,7 +235,7 @@ func (api *UserAPI) publishRegisterEmail(m *model.User, token string) error {
 		return err
 	}
 
-	err = api.publisher.Publish(api.cfg.NsqEmailRegisterTopic, body)
+	err = api.publisher.Publish(api.cfg.NsqMailerTopic, body)
 	if err != nil {
 		return err
 	}

@@ -18,7 +18,7 @@ storage:
     access_key_id: "AYEKOSQDTJR0E12W2BRS"
     access_key_secret: "H+gdD9eaBYuBEbtyRTblmVdQSAXVBLjim83r9I+H"
 nsq_pinner_topic: "pin-requests"
-nsq_email_register_topic: "email-register"
+nsq_mailer_topic: "mailer"
 activate_user_web_url: "http://localhost:3000/api/activate/user"
 nsqd_url: "localhost:4150"
 gin_mode: ""

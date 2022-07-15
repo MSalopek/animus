@@ -1,11 +1,22 @@
 package queue
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 const (
 	SourceUser   = "USER"
 	SourceClient = "CLIENT"
+
+	MailerTypeRegister  MailerMessageType = "register"
+	MailerTypeResetPass MailerMessageType = "reset"
 )
+
+var validMailerMessage = map[MailerMessageType]struct{}{
+	MailerTypeRegister:  struct{}{},
+	MailerTypeResetPass: struct{}{},
+}
 
 // Holds path to storage object and DB StorageID.
 type PinRequest struct {
@@ -25,19 +36,36 @@ func (pr *PinRequest) Marshal() ([]byte, error) {
 	return json.Marshal(pr)
 }
 
-// User data for sending out registration emails.
-type RegisterEmail struct {
-	Username  *string `json:"username,omitempty"`
-	Firstname *string `json:"firstname,omitempty"`
-	Lastname  *string `json:"lastname,omitempty"`
-	URL       string  `json:"url"`
-	Email     string  `json:"email"`
+type MailerMessageType string
+
+type MailerMessage struct {
+	Type      MailerMessageType `json:"type"`
+	Username  *string           `json:"username,omitempty"`
+	Firstname *string           `json:"firstname,omitempty"`
+	Lastname  *string           `json:"lastname,omitempty"`
+	URL       string            `json:"url"`
+	Email     string            `json:"email"`
 }
 
-func (re *RegisterEmail) Unmarshal(raw []byte) error {
-	return json.Unmarshal(raw, re)
+func (m *MailerMessage) Validate() error {
+	if _, ok := validMailerMessage[m.Type]; !ok {
+		return fmt.Errorf("invalid mailer message type: %s", m.Type)
+	}
+
+	if m.Type == MailerTypeRegister && (m.Email == "" || m.URL == "") {
+		return fmt.Errorf("registration messages must include email and url")
+	}
+
+	if m.Type == MailerTypeResetPass && (m.Email == "" || m.URL == "") {
+		return fmt.Errorf("password reset messages must include email and url")
+	}
+	return nil
 }
 
-func (re *RegisterEmail) Marshal() ([]byte, error) {
-	return json.Marshal(re)
+func (m *MailerMessage) Unmarshal(raw []byte) error {
+	return json.Unmarshal(raw, m)
+}
+
+func (m *MailerMessage) Marshal() ([]byte, error) {
+	return json.Marshal(m)
 }

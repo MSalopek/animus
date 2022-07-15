@@ -22,9 +22,9 @@ type Config struct {
 	TextLogs            bool     `json:"text_logs,omitempty" yaml:"text_logs"`
 	LogFile             string   `json:"log_file,omitempty" yaml:"log_file"`
 
-	NsqdURL               string `json:"nsqd_url,omitempty" yaml:"nsqd_url"`
-	NsqPinnerTopic        string `json:"nsq_pinner_topic,omitempty" yaml:"nsq_pinner_topic"`
-	NsqEmailRegisterTopic string `json:"nsq_email_register_topic,omitempty" yaml:"nsq_email_register_topic"`
+	NsqdURL        string `json:"nsqd_url,omitempty" yaml:"nsqd_url"`
+	NsqPinnerTopic string `json:"nsq_pinner_topic,omitempty" yaml:"nsq_pinner_topic"`
+	NsqMailerTopic string `json:"nsq_mailer_topic,omitempty" yaml:"nsq_mailer_topic"`
 
 	// used in links for registration or password reset emails
 	ActivateUserWebURL string `json:"activate_user_web_url" yaml:"activate_user_web_url"`
