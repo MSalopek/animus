@@ -85,8 +85,12 @@ function StorageView({ rows, total, pages, currentPage }) {
           </div>
         </div>
 
-        {rows && (
+        {rows && rows.length ? (
           <div className="space-y-2 lg:mt-8 border p-4 rounded-lg">
+            <div className="grid grid-cols-2 ">
+              <div className="text-gray-500 px-3">Name</div>
+              <div className="text-gray-500 px-3">CID</div>
+            </div>
             {rows.map((r) => (
               <StorageRow
                 key={r.name}
@@ -102,6 +106,12 @@ function StorageView({ rows, total, pages, currentPage }) {
                 deleteFunc={deleteRow}
               />
             ))}
+          </div>
+        ) : (
+          <div className="mt-4 space-y-4 lg:mt-8 border p-4 rounded-lg">
+            <h2 className="text font-semibold text-gray-600">
+              You have not added any documents. <br></br> Click on Add File or Add Folder to add some.
+            </h2>
           </div>
         )}
       </div>
@@ -124,24 +134,20 @@ function StorageRow({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="py-1 px-8 bg-gray-100 rounded-lg dark:bg-gray-800">
+    <div className="py-1 px-3 bg-gray-100 rounded-lg dark:bg-gray-800">
       <div className="flex items-center justify-between">
         <div className="grid grid-cols-2 w-3/4">
-          <div className="text-gray-700 dark:text-white">
-            <span className="text-sm text-gray-400">Name:</span>
+          <div className="text-gray-700 dark:text-white pr-12">
             <h1 className="font-semibold break-all">{name}</h1>
           </div>
 
-          <div className="text-gray-700 dark:text-white">
-            <span className="text-sm text-gray-400">CID:</span>
-            <div className="flex flex-row sm:flex-col md:flex-row lg:flex-row xl:flex-row items-center text-gray-700 dark:text-white">
-              <h1 className="pr-2 break-all">{cid || 'N/A'}</h1>
+          <div className="text-gray-700 dark:text-white pr-12">
+            <div className="flex flex-row sm:flex-col md:flex-row lg:flex-row xl:flex-row items-center text-gray-700 dark:text-white gap-2">
+              <h1 className="break-all">{cid || 'N/A'}</h1>
               {cid && (
-                <span>
-                  <CopyToClipboard text={cid || ''}>
-                    <DuplicateIcon className="w-5 h-5" />
-                  </CopyToClipboard>
-                </span>
+                <CopyToClipboard text={cid || ''}>
+                  <DuplicateIcon className="w-5 h-5" />
+                </CopyToClipboard>
               )}
             </div>
           </div>

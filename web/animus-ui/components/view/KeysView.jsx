@@ -121,7 +121,9 @@ function KeysView({ rows }) {
             ))}
           </div>
         ) : (
-          <></>
+          <div className="mt-4 space-y-4 lg:mt-8 border p-4 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-600">No keys available. Click on Add Key to create one.</h2>
+          </div>
         )}
       </div>
     </section>
