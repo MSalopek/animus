@@ -48,6 +48,7 @@ func main() {
 	}
 
 	m := mailer.New(*key, *secret, *topic, *nsqLookup, "matija@animus.store", "Matija from Animus", logger, *dryRun)
+	wg.Add(1)
 	go m.HandleMessages(&wg)
 
 	<-ctx.Done()
