@@ -1,0 +1,12 @@
+.git
+.gitignore
+.gitattributes
+db/
+demo/
+devenv/
+scripts/
+web/animus-ui
+docker-compose.local.yaml
+docker-compose.yaml
+*.txt
+*.md
