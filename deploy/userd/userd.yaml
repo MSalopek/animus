@@ -1,0 +1,24 @@
+auth_secret: "animus_password_SECRET_VERY_Gewd"
+auth_authority: "AnimusEngine"
+auth_expiration_hours: 24
+cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:3001"
+
+http_port: ":8083"
+db_dsn: "host=db user=animus password=animus dbname=animus port=5432 sslmode=disable"
+db_uri: "postgres://animus:animus@db:5432/animus"
+debug: true
+text_logs: true
+bucket: "animus"
+storage:
+    lifetime: 2
+    region: "eu-central-1"
+    endpoint: "localhost:9000"
+    access_key_id: "AYEKOSQDTJR0E12W2BRS"
+    access_key_secret: "H+gdD9eaBYuBEbtyRTblmVdQSAXVBLjim83r9I+H"
+nsq_pinner_topic: "pin-requests"
+nsq_mailer_topic: "mailer"
+activate_user_web_url: "http://localhost:3000/api/activate/user"
+nsqd_url: "localhost:4150"
+gin_mode: ""
