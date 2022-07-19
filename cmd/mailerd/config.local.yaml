@@ -1,0 +1,8 @@
+api_key: "test-key"
+api_secret: "test-secret-oooh"
+topic: "mailer"
+nsq_lookup: "localhost:4161"
+sender: "matija@animus.store"
+sender_name: "Matija from Animus"
+dry_run: true
+debug: true

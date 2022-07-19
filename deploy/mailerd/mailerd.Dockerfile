@@ -15,7 +15,8 @@ RUN go build -o mailerd ./cmd/mailerd
 FROM alpine:3.14 as production
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/mailerd .
+COPY --from=builder /app/deploy/mailerd/mailerd.yaml /etc/mailerd.conf
 LABEL service=mailerd
 LABEL type=daemon
 # Exec built binary
-CMD ./mailerd
+CMD ./mailerd -config /etc/mailerd.conf

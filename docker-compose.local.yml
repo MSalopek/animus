@@ -135,3 +135,15 @@ services:
       - nsqd
       - minio
 
+  mailerd:
+    container_name: mailerd
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: deploy/mailerd/mailerd.Dockerfile
+      target: production
+    depends_on:
+      - nsqlookupd
+      - nsqd
+      - minio
+
