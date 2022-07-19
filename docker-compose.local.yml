@@ -121,3 +121,17 @@ services:
       # - minio
     ports:
       - "8084:8084"
+
+  pinnerd:
+    container_name: pinnerd
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: deploy/pinnerd/pinnerd.Dockerfile
+      target: production
+    depends_on:
+      - db
+      - nsqlookupd
+      - nsqd
+      - minio
+

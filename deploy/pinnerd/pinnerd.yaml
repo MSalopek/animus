@@ -1,0 +1,17 @@
+node_api_url: "localhost:5001"
+local_shell: false
+db_dsn: "host=db user=animus password=animus dbname=animus port=5432 sslmode=disable"
+db_uri: "postgres://animus:animus@db:5432/animus"
+debug: true
+text_logs: true
+storage:
+    lifetime: 2
+    region: "eu-central-1"
+    endpoint: "localhost:9000"
+    access_key_id: "AYEKOSQDTJR0E12W2BRS"
+    access_key_secret: "H+gdD9eaBYuBEbtyRTblmVdQSAXVBLjim83r9I+H"
+bucket: "animus"
+nsq_lookupd_url: "localhost:4161"
+publish_topic: []
+subscribe_topic: "pin-requests"
+max_concurrent_requests: 10
