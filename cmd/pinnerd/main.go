@@ -27,7 +27,7 @@ func main() {
 	}
 	file, err := ioutil.ReadFile(*cfgPath)
 	if err != nil {
-		log.Fatalf("error reading config file: %s", &err)
+		log.Fatalf("error reading config file: %s", err)
 	}
 
 	var cfg pinner.Config

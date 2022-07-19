@@ -11,7 +11,10 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
       - PGDATA=/var/lib/postgresql-static/data
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - 5432:5432
+    volumes: 
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
   wait-for-db:
     image: dadarek/wait-for-dependencies
@@ -21,7 +24,7 @@ services:
 
   db-migrate:
     image: gomicro/goose
-    command: goose -dir "/migrations" postgres "host=animus user=animus dbname=animus password=animus sslmode=disable" up
+    command: goose -dir "/migrations" postgres "host=animus user=animus dbname=animus password=animus sslmode=disable port=5432 host=db" up
     depends_on:
       - db
     restart: on-failure
@@ -31,34 +34,54 @@ services:
   ipfs:
     image: ipfs/go-ipfs:latest
     environment:
-      - IPFS_PROFILE=server
+      - IPFS_PROFILE=local-discovery
       - IPFS_PATH=/ipfsdata
     volumes:
-      - ./devenv/data/ipfs:/ipfsdata
+      # ipfs node is private
+      # ./data/ipfs/config::Bootstrap list is empty (no bootstrap)
+      # swarm key is provided in the devenv
+      - ./devenv/ipfs:/ipfsdata
     ports:
-      - "4001:4001"
-      - "127.0.0.1:8080:8080"
-      - "127.0.0.1:8081:8081"
-      - "127.0.0.1:5001:5001"
+      # Swarm listens on all interfaces, so is remotely reachable.
+      - 4001:4001/tcp
+      - 4001:4001/udp
+      
+      # The following ports only listen on the loopback interface, so are not remotely reachable by default.
+      # If you want to override these or add more ports, see https://docs.docker.com/compose/extends/ .
+      
+      # API port, which includes admin operations, so you probably don't want this remotely accessible.
+      - 5001:5001
+      
+      # HTTP Gateway
+      - 8080:8080
 
-  nsqlookupd:
-    image: nsqio/nsq
-    command: /nsqlookupd
+  minio:
+    image: quay.io/minio/minio:RELEASE.2022-04-29T01-27-09Z
+    command: server --console-address ":9001" /data  
+    hostname: minio1
+    volumes:
+      - ./devenv/minio/data:/data
     ports:
-      - "4160"
-      - "4161"
-  nsqd:
-    image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160
+      - 9000:9000
+      - 9001:9001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  userd:
+    container_name: userd
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: deploy/userd/userd.Dockerfile
+      target: production
     depends_on:
-      - nsqlookupd
+      - db
+      # - nsqlookupd
+      # - nsqd
+      # - minio
     ports:
-      - "4150"
-      - "4151"
-  nsqadmin:
-    image: nsqio/nsq
-    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
-    depends_on:
-      - nsqlookupd  
-    ports:
-      - "4171"
+      - "8083:8083"
+

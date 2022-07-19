@@ -91,3 +91,18 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+ 
+  userd:
+    container_name: userd
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: deploy/userd/userd.Dockerfile
+      target: production
+    depends_on:
+      - db
+      # - nsqlookupd
+      # - nsqd
+      # - minio
+    ports:
+      - "8083:8083"
