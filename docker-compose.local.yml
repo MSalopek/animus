@@ -106,3 +106,18 @@ services:
       # - minio
     ports:
       - "8083:8083"
+
+  clientd:
+    container_name: clientd
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: deploy/clientd/clientd.Dockerfile
+      target: production
+    depends_on:
+      - db
+      # - nsqlookupd
+      # - nsqd
+      # - minio
+    ports:
+      - "8084:8084"
