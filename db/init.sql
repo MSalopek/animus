@@ -482,7 +482,7 @@ CREATE TABLE public.users (
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone,
-    active boolean DEFAULT false NOT NULL,
+    verified boolean DEFAULT false NOT NULL,
     CONSTRAINT users_deleted_at CHECK (((deleted_at IS NULL) OR (deleted_at >= created_at))),
     CONSTRAINT users_email_valid CHECK (((email)::text ~ '^[^@]+@[^@]+$'::text)),
     CONSTRAINT users_pass_bcrypt_check CHECK ((length(password) = ANY (ARRAY[59, 60]))),
@@ -635,8 +635,8 @@ COPY public.user_subscriptions (id, user_id, public_id, subscription_id, created
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: animus
 --
 
-COPY public.users (id, username, firstname, lastname, email, password, max_keys, created_at, updated_at, deleted_at, active) FROM stdin;
-1	animus	Animus	Admin	admin@example.com	$2a$12$IRWQnDUmZ.OjvTuLKaBNte09IcwrvtcPni1G4rBYVpZLW0WJOuPnC	5	2022-07-19 08:12:40.774613	2022-07-19 08:12:40.774613	\N	f
+COPY public.users (id, username, firstname, lastname, email, password, max_keys, created_at, updated_at, deleted_at, verified) FROM stdin;
+1	animus	Animus	Admin	admin@example.com	$2a$12$IRWQnDUmZ.OjvTuLKaBNte09IcwrvtcPni1G4rBYVpZLW0WJOuPnC	5	2022-07-19 08:12:40.774613	2022-07-19 08:12:40.774613	\N	t
 \.
 
 

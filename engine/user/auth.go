@@ -115,7 +115,7 @@ func (api *UserAPI) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := api.repo.GetUserByEmail(creds.Email)
+	user, err := api.repo.GetVerifiedUserByEmail(creds.Email)
 	if err == gorm.ErrRecordNotFound {
 		engine.AbortErr(c, http.StatusNotFound, engine.ErrNotFound)
 		return

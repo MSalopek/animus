@@ -126,15 +126,11 @@ export async function LoginCredentials(email, password) {
   return await API.post('/login', { email, password });
 }
 
-export async function Register(params) {
-  const res = await axios.post(`${API_URL}/register`, params);
-  return res.data;
+export async function RegisterUser(params) {
+  return await API.post('/register', params)
 }
 
 export async function ActivateUser(email, token) {
   return await axios.post(`${API_URL}/activate/email/${email}?token=${token}`);
 }
 
-// export async function Logout() {
-//   localStorage.removeItem('user');
-// }

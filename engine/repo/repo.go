@@ -69,6 +69,15 @@ func (rpo *Repo) GetUserByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
+func (rpo *Repo) GetVerifiedUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	res := rpo.Where("email = ? AND deleted_at IS NULL AND verified IS TRUE", email).First(&user)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &user, nil
+}
+
 func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]*model.Storage, error) {
 	var s []*model.Storage
 	q := rpo.Where("user_id = ? AND deleted_at IS NULL", userID).
