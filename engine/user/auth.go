@@ -181,10 +181,8 @@ func (api *UserAPI) ActivateUser(c *gin.Context) {
 			}).Error(res.Error)
 	}
 
-	user.Active = true
-	user.UpdatedAt = timestamp
 	if res := api.repo.Model(user).Updates(
-		model.User{Active: true, UpdatedAt: timestamp}); res.Error != nil {
+		model.User{Verified: true, UpdatedAt: timestamp}); res.Error != nil {
 		api.logger.WithFields(
 			log.Fields{
 				"message": "failed to activate user",

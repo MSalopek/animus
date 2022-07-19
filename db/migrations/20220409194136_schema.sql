@@ -49,7 +49,7 @@ CREATE TABLE users (
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
-	active BOOLEAN NOT NULL DEFAULT false,
+	verified BOOLEAN NOT NULL DEFAULT false,
 
 	CONSTRAINT users_email_uniq UNIQUE (email),
 	CONSTRAINT users_email_valid CHECK (email ~ '^[^@]+@[^@]+$'),
@@ -132,7 +132,7 @@ CREATE TABLE subscriptions (
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
 	valid_from TIMESTAMP NOT NULL DEFAULT now(),
-	valid_to TIMESTAMP NOT NULL,
+	valid_to TIMESTAMP NOT NULL DEFAULT 'infinity',
 	config JSONB DEFAULT '{}' :: JSONB,
 
 	CONSTRAINT subscriptions_valid_to_valid_from CHECK (valid_to >= valid_from),

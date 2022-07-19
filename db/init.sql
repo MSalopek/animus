@@ -74,6 +74,18 @@ CREATE TYPE public.key_access_rights AS ENUM (
 ALTER TYPE public.key_access_rights OWNER TO animus;
 
 --
+-- Name: token_type; Type: TYPE; Schema: public; Owner: animus
+--
+
+CREATE TYPE public.token_type AS ENUM (
+    'register_email',
+    'reset_pass'
+);
+
+
+ALTER TYPE public.token_type OWNER TO animus;
+
+--
 -- Name: upload_stage; Type: TYPE; Schema: public; Owner: animus
 --
 
@@ -243,15 +255,15 @@ ALTER SEQUENCE public.goose_db_version_id_seq OWNED BY public.goose_db_version.i
 CREATE TABLE public.keys (
     id bigint NOT NULL,
     user_id bigint,
-    client_key character varying(32) UNIQUE NOT NULL,
+    client_key character varying(32) NOT NULL,
     client_secret character varying(64) NOT NULL,
     rights public.key_access_rights DEFAULT 'r'::public.key_access_rights NOT NULL,
     disabled boolean DEFAULT false NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone,
-    valid_from timestamp without time zone NOT NULL,
-    valid_to timestamp without time zone NOT NULL,
+    valid_from timestamp without time zone DEFAULT now() NOT NULL,
+    valid_to timestamp without time zone DEFAULT 'infinity'::timestamp without time zone NOT NULL,
     CONSTRAINT keys_created_at_deleted_at CHECK (((deleted_at IS NULL) OR (deleted_at >= created_at))),
     CONSTRAINT keys_created_at_valid_from CHECK ((created_at <= valid_from)),
     CONSTRAINT keys_updated_at CHECK ((updated_at >= created_at)),
@@ -343,7 +355,7 @@ CREATE TABLE public.subscriptions (
     currency character varying(3) DEFAULT 'EUR'::character varying NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone,
-    valid_from timestamp without time zone NOT NULL,
+    valid_from timestamp without time zone DEFAULT now() NOT NULL,
     valid_to timestamp without time zone NOT NULL,
     config jsonb DEFAULT '{}'::jsonb,
     CONSTRAINT subscriptions_created_at_deleted_at CHECK (((deleted_at IS NULL) OR (deleted_at >= created_at))),
@@ -376,6 +388,44 @@ ALTER SEQUENCE public.subscriptions_id_seq OWNED BY public.subscriptions.id;
 
 
 --
+-- Name: tokens; Type: TABLE; Schema: public; Owner: animus
+--
+
+CREATE TABLE public.tokens (
+    id bigint NOT NULL,
+    user_id bigint,
+    token uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    type public.token_type DEFAULT 'register_email'::public.token_type NOT NULL,
+    valid_from timestamp without time zone DEFAULT now() NOT NULL,
+    valid_to timestamp without time zone DEFAULT (now() + '3 days'::interval) NOT NULL,
+    is_used boolean DEFAULT false NOT NULL
+);
+
+
+ALTER TABLE public.tokens OWNER TO animus;
+
+--
+-- Name: tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: animus
+--
+
+CREATE SEQUENCE public.tokens_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tokens_id_seq OWNER TO animus;
+
+--
+-- Name: tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: animus
+--
+
+ALTER SEQUENCE public.tokens_id_seq OWNED BY public.tokens.id;
+
+
+--
 -- Name: user_subscriptions; Type: TABLE; Schema: public; Owner: animus
 --
 
@@ -386,7 +436,7 @@ CREATE TABLE public.user_subscriptions (
     subscription_id bigint,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone,
-    valid_from timestamp without time zone NOT NULL,
+    valid_from timestamp without time zone DEFAULT now() NOT NULL,
     valid_to timestamp without time zone NOT NULL,
     CONSTRAINT user_subscriptions_created_at_deleted_at CHECK (((deleted_at IS NULL) OR (deleted_at >= created_at))),
     CONSTRAINT user_subscriptions_created_at_valid_from CHECK ((created_at <= valid_from)),
@@ -427,14 +477,15 @@ CREATE TABLE public.users (
     firstname character varying(32),
     lastname character varying(32),
     email public.email NOT NULL,
-    password public.bcrypt NOT NULL,
+    password character(60) NOT NULL,
     max_keys integer DEFAULT 5 NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone,
+    active boolean DEFAULT false NOT NULL,
     CONSTRAINT users_deleted_at CHECK (((deleted_at IS NULL) OR (deleted_at >= created_at))),
     CONSTRAINT users_email_valid CHECK (((email)::text ~ '^[^@]+@[^@]+$'::text)),
-    CONSTRAINT users_pass_hash CHECK ((length((password)::bpchar) = ANY (ARRAY[59, 60]))),
+    CONSTRAINT users_pass_bcrypt_check CHECK ((length(password) = ANY (ARRAY[59, 60]))),
     CONSTRAINT users_updated_at CHECK ((updated_at >= created_at))
 );
 
@@ -498,6 +549,13 @@ ALTER TABLE ONLY public.subscriptions ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: tokens id; Type: DEFAULT; Schema: public; Owner: animus
+--
+
+ALTER TABLE ONLY public.tokens ALTER COLUMN id SET DEFAULT nextval('public.tokens_id_seq'::regclass);
+
+
+--
 -- Name: user_subscriptions id; Type: DEFAULT; Schema: public; Owner: animus
 --
 
@@ -525,7 +583,7 @@ COPY public.gateways (id, user_id, name, slug, public_id) FROM stdin;
 
 COPY public.goose_db_version (id, version_id, is_applied, tstamp) FROM stdin;
 1	0	t	2022-04-09 20:10:30.384308
-12	20220409194136	t	2022-07-07 16:53:56.346862
+17	20220409194136	t	2022-07-19 10:09:53.304203
 \.
 
 
@@ -534,7 +592,7 @@ COPY public.goose_db_version (id, version_id, is_applied, tstamp) FROM stdin;
 --
 
 COPY public.keys (id, user_id, client_key, client_secret, rights, disabled, created_at, updated_at, deleted_at, valid_from, valid_to) FROM stdin;
-1	1	aEdcerBC7N1Y82N14bVEo7KWIiM0Ntje	dnkHJySctQFTm39TXy0kY3Z8awUBITK1deMwsdpMkzi06Dc7ZqxAeyNYVO9m7uZP	rwd	f	2022-07-07 16:54:01.959992	2022-07-07 16:54:01.959992	\N	2022-07-07 16:54:01.959992	infinity
+1	1	aEdcerBC7N1Y82N14bVEo7KWIiM0Ntje	dnkHJySctQFTm39TXy0kY3Z8awUBITK1deMwsdpMkzi06Dc7ZqxAeyNYVO9m7uZP	rwd	f	2022-07-19 08:18:29.101242	2022-07-19 08:18:29.101242	\N	2022-07-19 08:18:29.101242	infinity
 \.
 
 
@@ -551,7 +609,16 @@ COPY public.storage (id, cid, user_id, name, dir, public, storage_bucket, storag
 --
 
 COPY public.subscriptions (id, public_id, name, promotion, price, currency, created_at, deleted_at, valid_from, valid_to, config) FROM stdin;
-1	00000000-0000-0000-0000-000000000000	Free Plan	f	0	EUR	2022-07-07 16:54:01.956942	\N	2022-07-07 16:54:01.956942	infinity	{}
+1	00000000-0000-0000-0000-000000000000	Free Plan	f	0	EUR	2022-07-19 08:16:42.189177	\N	2022-07-19 08:16:42.189177	infinity	{}
+\.
+
+
+--
+-- Data for Name: tokens; Type: TABLE DATA; Schema: public; Owner: animus
+--
+
+COPY public.tokens (id, user_id, token, type, valid_from, valid_to, is_used) FROM stdin;
+1	1	be919cc8-df59-4dc4-85d0-47965658b91d	register_email	2022-07-19 08:13:11.643436	2022-07-19 08:15:11.643436	t
 \.
 
 
@@ -560,7 +627,7 @@ COPY public.subscriptions (id, public_id, name, promotion, price, currency, crea
 --
 
 COPY public.user_subscriptions (id, user_id, public_id, subscription_id, created_at, deleted_at, valid_from, valid_to) FROM stdin;
-1	1	00000000-0000-0000-0000-000000000000	1	2022-07-07 16:54:01.958178	\N	2022-07-07 16:54:01.958178	infinity
+1	1	00000000-0000-0000-0000-000000000000	1	2022-07-19 08:17:09.943759	\N	2022-07-19 08:17:09.943759	infinity
 \.
 
 
@@ -568,8 +635,8 @@ COPY public.user_subscriptions (id, user_id, public_id, subscription_id, created
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: animus
 --
 
-COPY public.users (id, username, firstname, lastname, email, password, max_keys, created_at, updated_at, deleted_at) FROM stdin;
-1	admin	Animus	Administrator	admin@example.com	$2a$12$IRWQnDUmZ.OjvTuLKaBNte09IcwrvtcPni1G4rBYVpZLW0WJOuPnC	5	2022-04-13 00:00:00	2022-04-13 00:00:00	\N
+COPY public.users (id, username, firstname, lastname, email, password, max_keys, created_at, updated_at, deleted_at, active) FROM stdin;
+1	animus	Animus	Admin	admin@example.com	$2a$12$IRWQnDUmZ.OjvTuLKaBNte09IcwrvtcPni1G4rBYVpZLW0WJOuPnC	5	2022-07-19 08:12:40.774613	2022-07-19 08:12:40.774613	\N	f
 \.
 
 
@@ -584,7 +651,7 @@ SELECT pg_catalog.setval('public.gateways_id_seq', 1, false);
 -- Name: goose_db_version_id_seq; Type: SEQUENCE SET; Schema: public; Owner: animus
 --
 
-SELECT pg_catalog.setval('public.goose_db_version_id_seq', 12, true);
+SELECT pg_catalog.setval('public.goose_db_version_id_seq', 17, true);
 
 
 --
@@ -606,6 +673,13 @@ SELECT pg_catalog.setval('public.storage_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.subscriptions_id_seq', 1, true);
+
+
+--
+-- Name: tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: animus
+--
+
+SELECT pg_catalog.setval('public.tokens_id_seq', 1, true);
 
 
 --
@@ -639,6 +713,14 @@ ALTER TABLE ONLY public.goose_db_version
 
 
 --
+-- Name: keys keys_client_key_key; Type: CONSTRAINT; Schema: public; Owner: animus
+--
+
+ALTER TABLE ONLY public.keys
+    ADD CONSTRAINT keys_client_key_key UNIQUE (client_key);
+
+
+--
 -- Name: keys keys_pkey; Type: CONSTRAINT; Schema: public; Owner: animus
 --
 
@@ -660,6 +742,22 @@ ALTER TABLE ONLY public.storage
 
 ALTER TABLE ONLY public.subscriptions
     ADD CONSTRAINT subscriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tokens tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: animus
+--
+
+ALTER TABLE ONLY public.tokens
+    ADD CONSTRAINT tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tokens tokens_token_key; Type: CONSTRAINT; Schema: public; Owner: animus
+--
+
+ALTER TABLE ONLY public.tokens
+    ADD CONSTRAINT tokens_token_key UNIQUE (token);
 
 
 --
@@ -695,6 +793,13 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: storage_cid_idx; Type: INDEX; Schema: public; Owner: animus
+--
+
+CREATE INDEX storage_cid_idx ON public.storage USING btree (cid);
+
+
+--
 -- Name: storage_dirs_idx; Type: INDEX; Schema: public; Owner: animus
 --
 
@@ -702,10 +807,17 @@ CREATE INDEX storage_dirs_idx ON public.storage USING btree (dir);
 
 
 --
--- Name: storage_user_cid_idx; Type: INDEX; Schema: public; Owner: animus
+-- Name: storage_user_id_idx; Type: INDEX; Schema: public; Owner: animus
 --
 
-CREATE INDEX storage_user_cid_idx ON public.storage USING btree (user_id, cid);
+CREATE INDEX storage_user_id_idx ON public.storage USING btree (user_id);
+
+
+--
+-- Name: tokens_user_id_idx; Type: INDEX; Schema: public; Owner: animus
+--
+
+CREATE INDEX tokens_user_id_idx ON public.tokens USING btree (user_id);
 
 
 --
@@ -772,6 +884,14 @@ ALTER TABLE ONLY public.keys
 
 ALTER TABLE ONLY public.storage
     ADD CONSTRAINT storage_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: tokens tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: animus
+--
+
+ALTER TABLE ONLY public.tokens
+    ADD CONSTRAINT tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
