@@ -116,9 +116,9 @@ services:
       target: production
     depends_on:
       - db
-      # - nsqlookupd
-      # - nsqd
-      # - minio
+      - nsqlookupd
+      - nsqd
+      - minio
     ports:
       - "8084:8084"
 
@@ -145,5 +145,4 @@ services:
     depends_on:
       - nsqlookupd
       - nsqd
-      - minio
 
