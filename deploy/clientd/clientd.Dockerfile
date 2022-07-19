@@ -10,12 +10,14 @@ RUN go mod download
 # Copy app files
 COPY . .
 # Build app
-RUN go build -o mailerd ./cmd/mailerd
+RUN go build -o clientd ./cmd/clientd
 
 FROM alpine:3.14 as production
 RUN apk add --no-cache ca-certificates
-COPY --from=builder /app/mailerd .
-LABEL service=mailerd
+COPY --from=builder /app/clientd .
+COPY --from=builder /app/deploy/clientd/clientd.yaml /etc/clientd.conf
+LABEL service=clientd
 LABEL type=daemon
+EXPOSE 8084
 # Exec built binary
-CMD ./mailerd
+CMD ./clientd -config /etc/clientd.conf
