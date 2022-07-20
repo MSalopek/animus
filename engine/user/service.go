@@ -158,6 +158,6 @@ func (api *UserAPI) Heartbeat(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":    "OK",
 		"service":   "user_api",
-		"timestamp": time.Now().Nanosecond(),
+		"timestamp": time.Now().UnixNano(),
 	})
 }
