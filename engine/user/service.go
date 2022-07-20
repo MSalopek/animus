@@ -71,7 +71,7 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 
 func (api *UserAPI) registerHandlers() {
 	root := api.engine.Group("/")
-	root.GET("/ping", api.Ping)
+	root.GET("/heartbeat", api.Heartbeat)
 	root.POST("/login", api.Login)
 	root.POST("/register", api.Register)
 	root.POST("/activate/email/:email", api.ActivateUser)
@@ -154,8 +154,10 @@ func (api *UserAPI) Stop() error {
 	return nil
 }
 
-func (api *UserAPI) Ping(c *gin.Context) {
+func (api *UserAPI) Heartbeat(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "OK",
+		"status":    "OK",
+		"service":   "user_api",
+		"timestamp": time.Now().Nanosecond(),
 	})
 }

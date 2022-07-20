@@ -59,7 +59,7 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 
 func (api *ClientAPI) registerHandlers() {
 	root := api.engine.Group("/")
-	root.GET("/ping", api.Ping)
+	root.GET("/heartbeat", api.Heartbeat)
 
 	auth := root.Group("/auth").Use(
 		authorizeClientRequest(api.repo),
@@ -120,9 +120,11 @@ func (api *ClientAPI) Stop() error {
 	return nil
 }
 
-func (api *ClientAPI) Ping(c *gin.Context) {
+func (api *ClientAPI) Heartbeat(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "OK",
+		"status":    "OK",
+		"service":   "client_api",
+		"timestamp": time.Now().Nanosecond(),
 	})
 }
 
