@@ -71,7 +71,7 @@ function Register() {
         {success ? (
           <Success email={email} />
         ) : (
-          <div className="w-full max-w-lg mx-auto border overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800">
+          <div className="w-full max-w-lg mx-auto border bg-white rounded-lg shadow-md dark:bg-gray-800">
             <div className="px-6 py-4">
               <h2 className="text-3xl font-bold text-center text-gray-700 dark:text-white">
                 Animus Store
@@ -81,7 +81,7 @@ function Register() {
                 Register your account
               </h2>
 
-            {err && <Alert message={err} onClick={clearErrMessage} />}
+              {err && <Alert message={err} onClick={clearErrMessage} />}
               <form>
                 <div className="mt-6">
                   <label
@@ -116,6 +116,9 @@ function Register() {
                     onChange={(e) => {
                       setEmail(e.target.value);
                       setEmailValid(isEmailValid(email));
+                    }}
+                    onPaste={(e) => {
+                      setEmail(e.clipboardData.getData('text'));
                     }}
                   />
                   {email && !emailValid && (
@@ -176,8 +179,16 @@ function Register() {
                     onChange={(e) => {
                       setPassword(e.target.value);
                       setPasswordValid(password.length >= 8);
+                      setPassMatch(e.target.value === confirm);
+
                     }}
                   />
+                  {password && !passwordValid && (
+                    <p className="text-sm text-green-600 py-2 px-1">
+                      Password must at least 8 characters long.
+                    </p>
+                  )}
+
                 </div>
 
                 <div className="mt-6">
