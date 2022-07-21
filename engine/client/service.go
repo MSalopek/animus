@@ -37,6 +37,10 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 		panic("Repo must be provided")
 	}
 
+	if cfg.GinMode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	e := gin.New()
 	s := &ClientAPI{
 		cfg: cfg,
