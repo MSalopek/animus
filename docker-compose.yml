@@ -3,15 +3,15 @@ services:
   db:
     image: postgres:14-alpine
     shm_size: '2gb'
-    command: postgres -c work_mem=30MB
+    command: postgres -c work_mem=64MB
     environment:
       - POSTGRES_USER=animus
       - POSTGRES_PASSWORD=animus
       - POSTGRES_DB=animus
       - POSTGRES_HOST_AUTH_METHOD=trust
       - PGDATA=/var/lib/postgresql-static/data
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     volumes: 
       - ./db/data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
@@ -50,10 +50,33 @@ services:
       # If you want to override these or add more ports, see https://docs.docker.com/compose/extends/ .
       
       # API port, which includes admin operations, so you probably don't want this remotely accessible.
-      - 5001:5001
+      # - 5001:5001
       
       # HTTP Gateway
-      - 8080:8080
+      # HOST:container
+      - 8085:8080
+
+  nsqlookupd:
+    image: nsqio/nsq
+    command: /nsqlookupd
+    # ports:
+    #   - 4160:4160
+    #   - 4161:4161
+  nsqd:
+    image: nsqio/nsq
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 # --broadcast-address=nsqd # uncommment this to use nsqadmin from docker
+    depends_on:
+      - nsqlookupd
+    # ports:
+    #   - 4150:4150
+    #   - 4151:4151
+  nsqadmin:
+    image: nsqio/nsq
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+    depends_on:
+      - nsqlookupd
+    ports:
+      - 4171:4171
 
   minio:
     image: quay.io/minio/minio:RELEASE.2022-04-29T01-27-09Z
@@ -79,9 +102,48 @@ services:
       target: production
     depends_on:
       - db
-      # - nsqlookupd
-      # - nsqd
-      # - minio
+      - nsqlookupd
+      - nsqd
+      - minio
     ports:
       - "8083:8083"
+
+  clientd:
+    container_name: clientd
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: deploy/clientd/clientd.Dockerfile
+      target: production
+    depends_on:
+      - db
+      - nsqlookupd
+      - nsqd
+      - minio
+    ports:
+      - "8084:8084"
+
+  pinnerd:
+    container_name: pinnerd
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: deploy/pinnerd/pinnerd.Dockerfile
+      target: production
+    depends_on:
+      - db
+      - nsqlookupd
+      - nsqd
+      - minio
+
+  mailerd:
+    container_name: mailerd
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: deploy/mailerd/mailerd.Dockerfile
+      target: production
+    depends_on:
+      - nsqlookupd
+      - nsqd
 
