@@ -55,9 +55,13 @@ function Register () {
         setSuccess(true);
       }
     } catch (error) {
-      setRequestErr(
-        'Internal error happened. Please try again later or contact support.'
-      );
+      if (error?.response?.status === 409) {
+        setRequestErr('User already exists. Did you forget your password?')
+      } else {
+        setRequestErr(
+          'Internal error happened. Please try again later or contact support.'
+        );
+      }
     }
   };
 
@@ -76,7 +80,7 @@ function Register () {
         />
       </Head>
       <div className='grid justify-items-center items-center h-screen p-0 sm:p-8'>
-        <pre>{JSON.stringify(watch(), null, 2)}</pre>
+        {/* <pre>{JSON.stringify(watch(), null, 2)}</pre> */}
         {success ? (
           <Success email={getValues('email')} />
         ) : (
@@ -327,18 +331,18 @@ function Register () {
 function Success ({ email }) {
   return (
     <div className='w-full max-w-lg h-96 mx-auto overflow-hidden border bg-white dark:bg-gray-800 rounded-lg shadow-lg'>
-      <div class='flex p-8 items-center gap-4'>
+      <div className='flex p-8 items-center gap-4'>
         <svg
-          class='w-9 h-9 fill-current text-green-500'
+          className='w-9 h-9 fill-current text-green-500'
           xmlns='http://www.w3.org/2000/svg'
           viewBox='0 0 24 24'
         >
           <path d='M0 0h24v24H0V0z' fill='none' />
           <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z' />
         </svg>
-        <h2 class='font-semibold text-2xl text-gray-800'>Account Created</h2>
+        <h2 className='font-semibold text-2xl text-gray-800'>Account Created</h2>
       </div>
-      <p class='px-8 text-lg text-gray-600 leading-relaxed'>
+      <p className='px-8 text-lg text-gray-600 leading-relaxed'>
         You need to activate your account before you can proceed.
         <br></br>
         <br></br>
