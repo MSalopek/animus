@@ -1,6 +1,17 @@
 version: '3.5'
+
+# NOTE
+# you may need to create a named volume if you want to use an external container
+# run the following command from project root (animus/)
+# docker volume create --driver local --opt type=none --opt device=${PWD}/devenv/db/data --opt o=bind localdb
+# ------------------------------------------------------------------------------------------------------#
+# volumes:
+#   localdb:
+#     external: true
+  
 services:
   db:
+    container_name: db
     image: postgres:14-alpine
     shm_size: '2gb'
     command: postgres -c work_mem=30MB
@@ -146,4 +157,3 @@ services:
     depends_on:
       - nsqlookupd
       - nsqd
-
