@@ -5,10 +5,11 @@ version: '3.5'
 # run the following command from project root (animus/)
 # docker volume create --driver local --opt type=none --opt device=${PWD}/devenv/db/data --opt o=bind localdb
 # ------------------------------------------------------------------------------------------------------#
-# volumes:
-#   localdb:
-#     external: true
-  
+volumes:
+  db-data:
+    driver: local
+    external: false
+
 services:
   db:
     container_name: db
@@ -20,11 +21,11 @@ services:
       - POSTGRES_PASSWORD=animus
       - POSTGRES_DB=animus
       - POSTGRES_HOST_AUTH_METHOD=trust
-      - PGDATA=/var/lib/postgresql-static/data
+      - PGDATA=/var/lib/postgresql/data
     ports:
       - 5432:5432
     volumes: 
-      - ./db/data:/var/lib/postgresql/data
+      - .db-data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
   wait-for-db:
