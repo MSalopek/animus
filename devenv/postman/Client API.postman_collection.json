@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "642f1d9c-f3a0-4e19-8e26-0d7a3d326979",
+		"_postman_id": "d28b259d-9f9c-42a6-860a-81f1ac8714f9",
 		"name": "Client API",
 		"description": "Animus Client API endpoints.\nThis API uses custom API key auth schemes.\nEach request must have the following headers set:\n1. X-API-KEY that is equal to the provided client_key\n2. X-API-SIGN which is an HMAC signature consisting in the form HMAC256(URI, client_secret)",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22329386"
 	},
 	"item": [
 		{
@@ -85,7 +86,7 @@
 								},
 								{
 									"key": "asc",
-									"value": null
+									"value": ""
 								}
 							]
 						},
@@ -252,7 +253,7 @@
 							"query": [
 								{
 									"key": "force",
-									"value": null
+									"value": ""
 								}
 							]
 						},
@@ -291,7 +292,7 @@
 							"query": [
 								{
 									"key": "force",
-									"value": null
+									"value": ""
 								}
 							]
 						},
@@ -460,7 +461,7 @@
 			]
 		},
 		{
-			"name": "Ping",
+			"name": "Heartbeat",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true,
 				"disabledSystemHeaders": {
@@ -480,12 +481,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{client_url}}/ping",
+					"raw": "{{client_url}}/heartbeat",
 					"host": [
 						"{{client_url}}"
 					],
 					"path": [
-						"ping"
+						"heartbeat"
 					]
 				}
 			},
