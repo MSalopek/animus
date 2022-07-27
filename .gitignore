@@ -26,6 +26,7 @@ devenv/ipfs/datastore
 devenv/ipfs/keystore
 devenv/ipfs/api
 devenv/ipfs/repo.lock
+devenv/db
 
 # minio storage
 devenv/minio
@@ -33,3 +34,6 @@ devenv/minio
 # local db mounted volume
 db/data
 node_modules
+
+# secrets and such
+*.prod
