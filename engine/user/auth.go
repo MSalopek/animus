@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -46,7 +47,7 @@ func (api *UserAPI) Register(c *gin.Context) {
 	var creds Credentials
 
 	if err := c.BindJSON(&creds); err != nil {
-		engine.AbortErr(c, http.StatusBadRequest, engine.ErrCouldNotRegister)
+		engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidRegistrationRequest)
 		return
 	}
 
@@ -77,7 +78,10 @@ func (api *UserAPI) Register(c *gin.Context) {
 	}
 
 	res := api.repo.Create(&user)
-	if res.Error != nil {
+	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key value violates unique constraint") {
+		engine.AbortErr(c, http.StatusConflict, engine.ErrUserAlredyCreated)
+		return
+	} else if res.Error != nil {
 		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrCouldNotRegister)
 		return
 	}

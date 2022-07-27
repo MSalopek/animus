@@ -13,11 +13,13 @@ var (
 	ErrForbidden     = &APIError{"forbidden"}
 	ErrBadRequest    = &APIError{"bad request"}
 
-	ErrCouldNotLogin      = &APIError{"could not log in"}
-	ErrCouldNotRegister   = &APIError{"could not register"}
-	ErrInvalidCredentials = &APIError{"invalid credentials"}
-	ErrNoAuthHeader       = &APIError{"Authorization header not provided"}
-	ErrInvalidAuthToken   = &APIError{"invalid Authorization token"}
+	ErrCouldNotLogin              = &APIError{"could not log in"}
+	ErrCouldNotRegister           = &APIError{"could not register"}
+	ErrUserAlredyCreated          = &APIError{"user already created"}
+	ErrInvalidCredentials         = &APIError{"invalid credentials"}
+	ErrInvalidRegistrationRequest = &APIError{"invalid registration request"}
+	ErrNoAuthHeader               = &APIError{"Authorization header not provided"}
+	ErrInvalidAuthToken           = &APIError{"invalid Authorization token"}
 
 	ErrInvalidClientAuth      = &APIError{"invalid client authorization"}
 	ErrInvalidClientSignature = &APIError{"invalid client signature"}
