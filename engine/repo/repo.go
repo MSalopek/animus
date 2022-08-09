@@ -78,6 +78,19 @@ func (rpo *Repo) GetVerifiedUserByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
+func (rpo *Repo) UpdateUser(id int, upd *model.User) (*model.User, error) {
+	var user model.User
+	// returns updated data
+	res := rpo.Model(&user).
+		Clauses(clause.Returning{}).
+		Where("id = ? AND deleted_at IS NULL", id).
+		Updates(&upd)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return &user, nil
+}
+
 func (rpo *Repo) GetUserUploads(ctx QueryCtx, userID int) ([]*model.Storage, error) {
 	var s []*model.Storage
 	q := rpo.Where("user_id = ? AND deleted_at IS NULL", userID).

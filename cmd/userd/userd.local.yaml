@@ -6,8 +6,8 @@ cors_origins:
     - "http://localhost:3001"
 
 http_port: "localhost:8083"
-db_dsn: "host=localhost user=animus password=animus dbname=animus port=5436 sslmode=disable"
-db_uri: "postgres://animus:animus@localhost:5436/animus"
+db_dsn: "host=localhost user=animus password=animus dbname=animus port=5432 sslmode=disable"
+db_uri: "postgres://animus:animus@localhost:5432/animus"
 debug: true
 text_logs: true
 bucket: "animus"

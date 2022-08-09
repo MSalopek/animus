@@ -406,6 +406,7 @@ func (api *ClientAPI) publishUnpinRequest(m *model.Storage) error {
 
 	pr := queue.PinRequest{
 		StorageID: int(m.ID),
+		UserID:    int(m.UserID),
 		CID:       *m.Cid,
 		Unpin:     true,
 		Key:       *m.StorageKey,

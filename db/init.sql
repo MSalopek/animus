@@ -483,6 +483,8 @@ CREATE TABLE public.users (
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     deleted_at timestamp without time zone,
     verified boolean DEFAULT false NOT NULL,
+	webhooks_url VARCHAR(256),
+    webhooks_active boolean DEFAULT false NOT NULL,
     CONSTRAINT users_deleted_at CHECK (((deleted_at IS NULL) OR (deleted_at >= created_at))),
     CONSTRAINT users_email_valid CHECK (((email)::text ~ '^[^@]+@[^@]+$'::text)),
     CONSTRAINT users_pass_bcrypt_check CHECK ((length(password) = ANY (ARRAY[59, 60]))),

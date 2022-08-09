@@ -30,3 +30,13 @@ type GetStorageResponse struct {
 	Returned int              `json:"returned"`
 	Rows     []*model.Storage `json:"rows"`
 }
+
+type UpdateUserRequest struct {
+	Username  *string `json:"username"`
+	Firstname *string `json:"firstname"`
+	Lastname  *string `json:"lastname"`
+	Email     *string `json:"email"`
+
+	WebhooksURL    *string `json:"webhooks_url"`
+	WebhooksActive *bool   `json:"webhooks_active"`
+}

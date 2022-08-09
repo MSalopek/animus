@@ -342,6 +342,7 @@ func (api *UserAPI) DeleteStorageRecord(c *gin.Context) {
 
 func (api *UserAPI) publishPinRequest(m *model.Storage) error {
 	pr := queue.PinRequest{
+		UserID:    int(m.UserID),
 		StorageID: int(m.ID),
 		Key:       *m.StorageKey,
 		Dir:       m.Dir,

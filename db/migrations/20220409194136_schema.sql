@@ -51,6 +51,9 @@ CREATE TABLE users (
 	deleted_at TIMESTAMP,
 	verified BOOLEAN NOT NULL DEFAULT false,
 
+	webhooks_url VARCHAR(256),
+	webhooks_active BOOLEAN NOT NULL DEFAULT false,
+
 	CONSTRAINT users_email_uniq UNIQUE (email),
 	CONSTRAINT users_email_valid CHECK (email ~ '^[^@]+@[^@]+$'),
 	CONSTRAINT users_updated_at CHECK (updated_at >= created_at),

@@ -23,9 +23,12 @@ type Config struct {
 	Storage storage.Config `json:"storage" yaml:"storage"`
 	Bucket  string         `json:"bucket" yaml:"bucket"`
 
-	NsqLookupdURL  string   `json:"nsq_lookupd_url" yaml:"nsq_lookupd_url"`
-	PublishTopics  []string `json:"publish_topic" yaml:"publish_topic"`
-	SubscribeTopic string   `json:"subscribe_topic" yaml:"subscribe_topic"`
+	NsqLookupdURL  string `json:"nsq_lookupd_url" yaml:"nsq_lookupd_url"`
+	NsqdURL        string `json:"nsqd_url" yaml:"nsqd_url"`
+	PublishTopic   string `json:"publish_topic" yaml:"publish_topic"`
+	SubscribeTopic string `json:"subscribe_topic" yaml:"subscribe_topic"`
+
+	RetryUrl string `json:"retry_url" yaml:"retry_url"`
 
 	MaxConcurrentRequests int `json:"max_concurrent_requests" yaml:"max_concurrent_requests"`
 }

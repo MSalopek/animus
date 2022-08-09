@@ -39,6 +39,9 @@ type User struct {
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	Verified  bool       `json:"verified"`
+
+	WebhooksURL    *string `json:"webhooks_url,omitempty"`
+	WebhooksActive *bool   `json:"webhooks_active"`
 }
 
 type Storage struct {

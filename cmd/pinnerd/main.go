@@ -74,6 +74,9 @@ func main() {
 	// go queue.WgChanBodyLogger(&wg, pinner.Messages)
 	go pinner.HandlePinRequests(&wg)
 
+	wg.Add(1)
+	go pinner.HandleWebhooks(&wg)
+
 	<-ctx.Done()
 	logger.Info("pinner stopping")
 	pinner.Stop()

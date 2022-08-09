@@ -12,6 +12,7 @@ storage:
     access_key_secret: "H+gdD9eaBYuBEbtyRTblmVdQSAXVBLjim83r9I+H"
 bucket: "animus"
 nsq_lookupd_url: "nsqlookupd:4161"
-publish_topic: []
+nsqd_url: "nsqd:4150"
+publish_topic: "webhooks"
 subscribe_topic: "pin-requests"
 max_concurrent_requests: 10

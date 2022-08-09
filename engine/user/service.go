@@ -82,6 +82,7 @@ func (api *UserAPI) registerHandlers() {
 	)
 	auth.GET("/whoami", api.WhoAmI)
 
+	auth.PATCH("/user", api.UpdateUser)
 	auth.GET("/user/keys", api.GetUserKeys)
 	auth.POST("/user/keys", api.CreateUserKey)
 	auth.PATCH("/user/keys/id/:id", api.UpdateUserKey)

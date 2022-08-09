@@ -3,6 +3,9 @@ package queue
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
+	"gorm.io/datatypes"
 )
 
 const (
@@ -20,6 +23,7 @@ var validMailerMessage = map[MailerMessageType]struct{}{
 
 // Holds path to storage object and DB StorageID.
 type PinRequest struct {
+	UserID    int    `json:"user_id,omitempty"`
 	StorageID int    `json:"storage_id,omitempty"` // db storage pk
 	CID       string `json:"cid,omitempty"`        // IPFS cid
 	Dir       bool   `json:"dir,omitempty"`
@@ -68,4 +72,26 @@ func (m *MailerMessage) Unmarshal(raw []byte) error {
 
 func (m *MailerMessage) Marshal() ([]byte, error) {
 	return json.Marshal(m)
+}
+
+type WebhookMessage struct {
+	StorageID   int64          `json:"id"`
+	UserID      int64          `json:"user_id"`
+	Cid         *string        `json:"cid"`
+	Name        string         `json:"name"`
+	Metadata    datatypes.JSON `json:"meta"`
+	UploadStage *string        `json:"stage"`
+	Pinned      bool           `json:"pinned"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at,omitempty"`
+	DeletedAt   *time.Time     `json:"deleted_at,omitempty"`
+	Status      string         `json:"status"`
+}
+
+func (w *WebhookMessage) Unmarshal(raw []byte) error {
+	return json.Unmarshal(raw, w)
+}
+
+func (w *WebhookMessage) Marshal() ([]byte, error) {
+	return json.Marshal(w)
 }
