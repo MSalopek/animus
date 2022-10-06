@@ -33,6 +33,10 @@ func (api *UserAPI) UploadFile(c *gin.Context) {
 	objPath := fmt.Sprintf("%d/%s", ctxUID, file.Filename)
 	info, err := storage.UploadFile(api.storage, file, api.cfg.Bucket, objPath)
 	if err != nil {
+		api.logger.WithFields(log.Fields{
+			"error":  err,
+			"method": "UPLOAD FILE",
+		}).Error("could not upload file")
 		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrFileSaveFailed)
 		return
 	}
@@ -53,6 +57,13 @@ func (api *UserAPI) UploadFile(c *gin.Context) {
 	}
 
 	if res := api.repo.Save(storage); res.Error != nil {
+		api.logger.WithFields(log.Fields{
+			"error":     res.Error,
+			"storageID": storage.ID,
+			"bucket":    storage.StorageBucket,
+			"key":       storage.StorageKey,
+			"method":    "REPO SAVE",
+		}).Error("could no repo save")
 		engine.AbortErr(c, http.StatusInternalServerError, engine.ErrFileSaveFailed)
 		return
 	}
