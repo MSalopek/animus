@@ -79,6 +79,8 @@ func (api *ClientAPI) registerHandlers() {
 	auth.POST("/storage/add-dir", api.UploadDir)
 	auth.POST("/storage/pin/id/:id", api.RequestPin)
 	auth.POST("/storage/unpin/id/:id", api.RequestUnpin)
+
+	auth.PATCH("/user", api.UpdateUser)
 }
 
 func (api *ClientAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
