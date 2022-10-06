@@ -22,12 +22,11 @@ type APIClientProvider interface {
 // client is an application using client_key + client_secret
 func authorizeClientRequest(prov APIClientProvider) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		bearer := c.Request.Header.Get("Authorization")
-		if bearer != "" {
-			engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidClientAuth)
-			return
-		}
-
+		// bearer := c.Request.Header.Get("Authorization")
+		// if bearer != "" {
+		// 	engine.AbortErr(c, http.StatusBadRequest, engine.ErrInvalidClientAuth)
+		// 	return
+		// }
 		key := c.Request.Header.Get("X-API-KEY")
 		if key == "" {
 			engine.AbortErr(c, http.StatusUnauthorized, engine.ErrInvalidClientAuth)

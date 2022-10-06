@@ -393,6 +393,7 @@ func (api *ClientAPI) RequestUnpin(c *gin.Context) {
 
 func (api *ClientAPI) publishPinRequest(m *model.Storage) error {
 	pr := queue.PinRequest{
+		UserID:    int(m.UserID),
 		StorageID: int(m.ID),
 		Key:       *m.StorageKey,
 		Dir:       m.Dir,
