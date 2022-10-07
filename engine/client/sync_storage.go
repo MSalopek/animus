@@ -117,6 +117,7 @@ func (api *ClientAPI) SyncUploadFile(c *gin.Context) {
 
 	storage.Cid = &cid
 	storage.Pinned = true
+	storage.UploadStage = model.UploadStageIPFS
 	if res := api.repo.Save(storage); res.Error != nil {
 		api.logger.WithFields(log.Fields{
 			"error":     res.Error,
