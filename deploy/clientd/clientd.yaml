@@ -1,4 +1,5 @@
 http_port: ":8084"
+node_api_url: "ipfs:5001"
 db_dsn: "host=db user=animus password=animus dbname=animus port=5432 sslmode=disable"
 db_uri: "postgres://animus:animus@db:5432/animus"
 debug: true

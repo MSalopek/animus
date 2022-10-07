@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	shell "github.com/ipfs/go-ipfs-api"
 	"github.com/msalopek/animus/engine"
 	"github.com/msalopek/animus/engine/repo"
 	"github.com/msalopek/animus/queue"
@@ -17,11 +18,13 @@ import (
 )
 
 type ClientAPI struct {
-	engine    *gin.Engine
-	server    *http.Server
-	storage   *storage.Manager
-	repo      *repo.Repo
-	logger    *log.Logger
+	sh      *shell.Shell
+	engine  *gin.Engine
+	server  *http.Server
+	storage *storage.Manager
+	repo    *repo.Repo
+	logger  *log.Logger
+
 	publisher queue.Publisher
 
 	done chan struct{}
@@ -50,6 +53,8 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 			Addr:    cfg.HttpPort,
 			Handler: e,
 		},
+
+		sh:        shell.NewShell(cfg.NodeApiURL),
 		repo:      repo,
 		storage:   storage.MustNewManager(cfg.Storage),
 		publisher: queue.MustNewPublisher(cfg.NsqPinnerTopic, cfg.NsqdURL),
@@ -75,6 +80,7 @@ func (api *ClientAPI) registerHandlers() {
 	auth.DELETE("/storage/id/:id", api.DeleteStorageRecord)
 	auth.GET("/storage/cid/:cid", api.GetStorageRecordByCid)
 
+	auth.POST("/storage/sync-add-file", api.SyncUploadFile)
 	auth.POST("/storage/add-file", api.UploadFile)
 	auth.POST("/storage/add-dir", api.UploadDir)
 	auth.POST("/storage/pin/id/:id", api.RequestPin)

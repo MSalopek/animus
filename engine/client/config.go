@@ -20,6 +20,8 @@ type Config struct {
 	NsqdURL        string `json:"nsqd_url,omitempty" yaml:"nsqd_url"`
 	NsqPinnerTopic string `json:"nsq_pinner_topic,omitempty" yaml:"nsq_pinner_topic"`
 
+	NodeApiURL string `json:"node_api_url" yaml:"node_api_url"`
+
 	Bucket  string         `json:"bucket,omitempty" yaml:"bucket"`
 	Storage storage.Config `json:"storage,omitempty" yaml:"storage"`
 	GinMode string         `json:"gin_mode,omitempty" yaml:"gin_mode"`

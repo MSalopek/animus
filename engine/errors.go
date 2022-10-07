@@ -42,6 +42,8 @@ var (
 	ErrFileSaveFailed = &APIError{"failed saving file"}
 	ErrDirSaveFailed  = &APIError{"directory saving failed"}
 
+	ErrPinFailed = &APIError{"IPFS pin failed. Storage record was saved."}
+
 	ErrMaxKeyAllocReached = &APIError{"maximum key allocation reached"}
 
 	ErrNoCID = &APIError{"CID is missing"}

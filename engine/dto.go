@@ -40,3 +40,10 @@ type UpdateUserRequest struct {
 	WebhooksURL    *string `json:"webhooks_url"`
 	WebhooksActive *bool   `json:"webhooks_active"`
 }
+
+type SyncAddFileResponse struct {
+	Object   model.Storage `json:"object"`
+	Status   string        `json:"status"`
+	Error    string        `json:"error,omitempty"`
+	RetryUrl string        `json:"retry_url,omitempty"`
+}
