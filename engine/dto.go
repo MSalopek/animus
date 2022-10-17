@@ -42,8 +42,24 @@ type UpdateUserRequest struct {
 }
 
 type SyncAddFileResponse struct {
-	Object   model.Storage `json:"object"`
-	Status   string        `json:"status"`
-	Error    string        `json:"error,omitempty"`
-	RetryUrl string        `json:"retry_url,omitempty"`
+	Object   SyncAddFileObject `json:"object"`
+	Status   string            `json:"status"`
+	Error    string            `json:"error,omitempty"`
+	RetryUrl string            `json:"retry_url,omitempty"`
+}
+
+type SyncAddFileObject struct {
+	ID     int64   `json:"id" gorm:"primaryKey"`
+	Cid    *string `json:"cid"`
+	Dir    bool    `json:"dir"`
+	Name   string  `json:"name"`
+	Public bool    `json:"public"`
+	Hash   *string `json:"hash,omitempty"`
+
+	UploadStage *string `json:"stage"`
+	Pinned      bool    `json:"pinned"`
+
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at,omitempty"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }

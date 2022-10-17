@@ -23,8 +23,21 @@ const (
 )
 
 func makeResponse(s *model.Storage, status, retryUrl string, err error) engine.SyncAddFileResponse {
+
 	r := engine.SyncAddFileResponse{
-		Object:   *s,
+		Object: engine.SyncAddFileObject{
+			ID:          s.ID,
+			Cid:         s.Cid,
+			Dir:         s.Dir,
+			Name:        s.Name,
+			Public:      s.Public,
+			Hash:        s.Hash,
+			UploadStage: s.UploadStage,
+			Pinned:      s.Pinned,
+			CreatedAt:   s.CreatedAt,
+			UpdatedAt:   s.UpdatedAt,
+			DeletedAt:   s.DeletedAt,
+		},
 		Status:   status,
 		RetryUrl: retryUrl,
 	}
@@ -56,8 +69,8 @@ func (api *ClientAPI) SyncUploadFile(c *gin.Context) {
 	meta := c.PostForm("meta")
 	if meta != "" {
 		// parse to check JSON validity
-		check := make(map[string]interface{})
-		if err := c.BindJSON(&check); err != nil {
+		var check map[string]interface{}
+		if err := json.Unmarshal([]byte(meta), &check); err != nil {
 			engine.AbortErrWithStatusFailed(c, http.StatusBadRequest, engine.ErrInvalidMeta)
 			return
 		}
@@ -84,10 +97,6 @@ func (api *ClientAPI) SyncUploadFile(c *gin.Context) {
 		Metadata:      datatypes.JSON(meta),
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
-	}
-
-	if buf, err := json.Marshal(info); err == nil {
-		storage.Metadata = buf
 	}
 
 	if res := api.repo.Save(storage); res.Error != nil {
