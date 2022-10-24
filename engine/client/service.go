@@ -17,6 +17,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// same as 100*1024*1024 -> 100MB
+const defaultMaxBodySize = 100 << 20
+
 type ClientAPI struct {
 	sh      *shell.Shell
 	engine  *gin.Engine
@@ -63,6 +66,7 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 	}
 
 	e.Use(engine.LogRequest(logger))
+	e.MaxMultipartMemory = defaultMaxBodySize
 	return s
 }
 
@@ -72,6 +76,7 @@ func (api *ClientAPI) registerHandlers() {
 
 	auth := root.Group("/auth").Use(
 		authorizeClientRequest(api.repo),
+		checkBodySize(),
 	)
 	auth.GET("/whoami", api.WhoAmI)
 

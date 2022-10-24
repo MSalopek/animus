@@ -77,3 +77,12 @@ func ValidateSignature(message, signature, key []byte) bool {
 	expected := mac.Sum(nil)
 	return hmac.Equal(signature, expected)
 }
+
+func checkBodySize() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var w http.ResponseWriter = c.Writer
+		c.Request.Body = http.MaxBytesReader(w, c.Request.Body, defaultMaxBodySize)
+
+		c.Next()
+	}
+}
