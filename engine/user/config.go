@@ -32,6 +32,8 @@ type Config struct {
 	Bucket  string         `json:"bucket,omitempty" yaml:"bucket"`
 	Storage storage.Config `json:"storage,omitempty" yaml:"storage"`
 	GinMode string         `json:"gin_mode,omitempty" yaml:"gin_mode"`
+
+	WebhookBaseURL string `json:"webhook_base_url,omitempty" yaml:"webhook_base_url"`
 }
 
 // Validate validates config.

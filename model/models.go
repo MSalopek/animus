@@ -131,10 +131,10 @@ type Subscription struct {
 }
 
 type UserSubscription struct {
-	ID             int64  `json:"-" gorm:"primaryKey"`
-	PublicID       string `json:"public_id"`
-	Promotion      bool   `json:"promotion"`
-	SubscriptionID int64  `json:"-"`
+	ID             int64 `json:"-" gorm:"primaryKey"`
+	UserID         int64 `json:"user_id"`
+	Promotion      bool  `json:"promotion"`
+	SubscriptionID int64 `json:"-"`
 
 	CreatedAt time.Time `json:"created_at"`
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
@@ -147,4 +147,18 @@ type APIClient struct {
 	Email        string
 	ClientKey    string
 	ClientSecret string
+}
+
+type NFT struct {
+	ID        int64 `json:"-" gorm:"primaryKey"`
+	UserID    int64 `json:"user_id"`
+	StorageID int64 `json:"storage_id"`
+
+	TokenID        int64  `json:"token_id"`
+	ItemType       string `json:"item_type"`
+	ExternalItemId int64  `json:"external_item_id"`
+	ExternalURL    string `json:"external_url"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

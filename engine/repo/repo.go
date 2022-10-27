@@ -250,7 +250,7 @@ func (rpo *Repo) CreateRegisterToken(userID int) (*model.Token, error) {
 
 func (rpo *Repo) GetUserToken(email, token, tokenType string) (*model.Token, error) {
 	var tk model.Token
-	res := rpo.Debug().Table("tokens").
+	res := rpo.Table("tokens").
 		Joins("JOIN users ON users.id = tokens.user_id").
 		Where(`users.email = ?
 		AND users.deleted_at IS NULL

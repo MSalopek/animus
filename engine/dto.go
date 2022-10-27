@@ -63,3 +63,17 @@ type SyncAddFileObject struct {
 	UpdatedAt time.Time  `json:"updated_at,omitempty"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
+
+type CreateNFTRequest struct {
+	StorageID   int64  `json:"storage_id"`
+	TokenID     int64  `json:"token_id"`
+	ItemType    string `json:"item_type"`
+	ExternalURL string `json:"external_url"`
+}
+
+type AfterMintWebhookRequest struct {
+	ItemId      int64  `json:"itemId"`
+	Type        string `json:"type"`
+	ExternalURL string `json:"externalLink"`
+	TokenID     int64  `json:"tokenId"`
+}

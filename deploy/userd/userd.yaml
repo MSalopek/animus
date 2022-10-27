@@ -22,3 +22,5 @@ nsq_mailer_topic: "mailer"
 activate_user_web_url: "http://localhost:3000/api/activate/user"
 nsqd_url: "nsqd:4150"
 gin_mode: ""
+webhook_base_url: "http://localhost:3000"
+

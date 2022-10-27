@@ -65,6 +65,7 @@ func New(cfg *Config, repo *repo.Repo, logger *log.Logger, done chan struct{}) *
 		done:      done,
 		logger:    logger,
 	}
+	fmt.Println("##########33", cfg.WebhookBaseURL)
 
 	return s
 }
@@ -94,6 +95,11 @@ func (api *UserAPI) registerHandlers() {
 	auth.POST("/user/storage/add-file", api.UploadFile)
 	auth.POST("/user/storage/add-dir", api.UploadDir)
 	auth.GET("/user/storage/download/id/:id", api.UploadDir)
+
+	auth.GET("/user/nft", api.GetUserNFTs)
+	auth.POST("/user/nft", api.CreateUserNFT)
+
+	auth.POST("/webhook/nft/storage/:id", api.SendNFTWebhook)
 
 	// IPFS operations
 	auth.POST("/user/storage/pin/id/:id", api.RequestPin)
